@@ -1,0 +1,13 @@
+import { Type } from '@nestjs/common';
+
+export type PrefixedRouteTree = {
+  path: string;
+  module?: Type<any>;
+
+  prefixedChildren?: {
+    prefix: string;
+    children: PrefixedRouteTree[];
+  };
+
+  children?: PrefixedRouteTree[];
+};

@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ArticleType {
+  common
+  special
+}
+
+model Language {
+  id                         Int                      @default(autoincrement()) @id
+  code                       String
+
+  articleLanguage            ArticleLanguage[]              
+}
+
+model Article {
+  code                       String                   @default(cuid()) @id
+
+  enabled                    Boolean                  @default(true)
+  archived                   Boolean                  @default(false)
+  type                       ArticleType              @default(common)
+
+  articleLanguage            ArticleLanguage[]
+
+  articleCategories          ArticleCategory[] 
+
+  updatedAt                  DateTime                 @updatedAt
+  createdAt                  DateTime                 @default(now())
+}
+
+model ArticleLanguage {
+  code                       String                   @default(cuid()) @id
+
+  name                       String                   @unique
+  nameCode                   String                   @unique
+  enabled                    Boolean                  @default(true)
+  
+  languageId                 Int         
+  language                   Language                 @relation(fields: [languageId], references: [id])
+
+  articleCode                String                     
+  article                    Article                  @relation(fields: [articleCode], references: [code])
+
+  articleVersion             ArticleVersion[]
+  
+  updatedAt                  DateTime                 @updatedAt
+  createdAt                  DateTime                 @default(now())
+
+  @@unique([languageId, articleCode])
+}
+
+model ArticleVersion {
+  code                       String                   @default(cuid()) @id
+  version                    Int                      @default(0) // trigger
+  enabled                    Boolean                  @default(true)
+
+  articleLanguageCode        String         
+  articleLanguage            ArticleLanguage          @relation(fields: [articleLanguageCode], references: [code])
+
+  schemaCode                 String                   @unique
+  schema                     Schema                   @relation(fields: [schemaCode], references: [code])
+
+  updatedAt                  DateTime                 @updatedAt
+  createdAt                  DateTime                 @default(now())
+
+  @@unique([version, articleLanguageCode])
+}
+
+model Schema {
+  code                       String                   @default(cuid()) @id
+  enabled                    Boolean                  @default(true)
+  archived                   Boolean                  @default(false)
+
+  parentCode                 String?
+  parentSchema               Schema?                  @relation("parentSchema", fields: [parentCode], references: [code])
+  childSchema                Schema[]                 @relation("parentSchema")
+
+  articleVersion             ArticleVersion?   
+
+  bodyId                     Int? 
+  body                       Body?                    @relation(fields: [bodyId], references: [id])
+
+  headerId                   Int? 
+  header                     Header?                  @relation(fields: [headerId], references: [id])
+
+  updatedAt                  DateTime                 @updatedAt
+  createdAt                  DateTime                 @default(now())
+}
+
+model Body {
+  id                         Int                      @default(autoincrement()) @id
+
+  content                    String                   @db.Text()
+
+  schema                     Schema[]                  
+
+  updatedAt                  DateTime                 @updatedAt
+  createdAt                  DateTime                 @default(now())
+}
+
+model Header {
+  id                         Int                      @default(autoincrement()) @id
+
+  content                    String                   @db.Text()
+
+  schema                     Schema[]
+  
+
+  updatedAt                  DateTime                 @updatedAt
+  createdAt                  DateTime                 @default(now())
+}
+
+model Category {
+  id                         Int                      @default(autoincrement()) @id
+  name                       String                  
+  description                String                  
+  enabled                    Boolean                  @default(true)
+  archived                   Boolean                  @default(false)
+
+  parentId                   Int?                     
+  parentCategory             Category?                @relation("parentCategory", fields: [parentId], references: [id])
+  childCategories            Category[]               @relation("parentCategory")
+
+  articleCategories          ArticleCategory[] 
+
+  updatedAt                  DateTime                 @updatedAt
+  createdAt                  DateTime                 @default(now())
+}
+
+model ArticleCategory {
+  articleCode               String
+  article                   Article                   @relation(fields: [articleCode], references: [code])
+
+  categoryId                Int
+  category                  Category                  @relation(fields: [categoryId], references: [id])
+
+  @@id([articleCode, categoryId])
+}
