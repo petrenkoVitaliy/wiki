@@ -114,7 +114,6 @@ export class SchemaRepository {
           },
         },
         header: {
-          // TODO
           create: {
             content: options.payload.header,
           },

@@ -48,7 +48,7 @@ export class SchemaController {
   }
 
   @Put('/:code/renovate')
-  renovateDraft(
+  renovateDraftSchema(
     @Param('code') code: string,
     @Param('language') languageCode: string,
     @Param('article_version_code') articleVersionCode: string,

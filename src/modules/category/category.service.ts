@@ -26,9 +26,8 @@ export class CategoryService {
             ...pick(category, ['id', 'name', 'description', 'parentId']),
 
             articles: category.articleCategories.map((articleCategory) => ({
-              ...pick(articleCategory.article, ['type']),
+              ...pick(articleCategory.article, ['type', 'code']),
               name: articleCategory.article.articleLanguage[0].name,
-              code: articleCategory.article.articleLanguage[0].code,
             })),
 
             children: [],

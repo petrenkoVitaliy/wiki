@@ -7,6 +7,7 @@ import { CreateSchemaDto } from './schema.dtos';
 import {
   ArticleVersionAggregation,
   ArticleVersionAggregationExtended,
+  ArticleVersionWithSiblings,
   NewArticleVersionResponse,
   SchemaAggregation,
   SchemaResponse,
@@ -103,7 +104,7 @@ export class SchemaService {
     const isLastVersion = articleVersion.code === actualVersion?.code;
 
     return this.mapToSchemaResponse(schema, {
-      shouldBeRenovated: isLastVersion,
+      shouldBeRenovated: !isLastVersion,
     });
   }
 
@@ -112,25 +113,21 @@ export class SchemaService {
     languageCode: string;
     code: string;
   }) {
-    const currentArticleVersion = await this.articleVersionRepository.findOne({
-      code: options.articleVersionCode,
-      languageCode: options.languageCode,
-    });
+    const [parentArticleVersion, schemaToApprove] = await Promise.all([
+      this.articleVersionRepository.findOne({
+        code: options.articleVersionCode,
+        languageCode: options.languageCode,
+      }),
+      this.schemaRepository.findOne({
+        code: options.code,
+      }),
+    ]);
 
-    const schemaToApprove = await this.schemaRepository.findOne({
-      code: options.code,
-    });
+    const isPrimarySchema = !schemaToApprove.parentSchema?.code;
+    const isCorrectDraftRelation =
+      schemaToApprove?.parentSchema?.code === parentArticleVersion.schema.code;
 
-    if (!schemaToApprove.parentSchema) {
-      throw new HttpException(
-        'Invalid schema to approve',
-        HttpStatus.FORBIDDEN,
-      );
-    }
-
-    if (
-      schemaToApprove.parentSchema.code !== currentArticleVersion.schema.code
-    ) {
+    if (!isCorrectDraftRelation || isPrimarySchema) {
       throw new HttpException(
         'Invalid schema to approve',
         HttpStatus.FORBIDDEN,
@@ -143,7 +140,7 @@ export class SchemaService {
     });
 
     const newArticleVersion = await this.articleVersionRepository.create({
-      articleLanguageCode: currentArticleVersion.articleLanguageCode,
+      articleLanguageCode: parentArticleVersion.articleLanguageCode,
       schemaCode: schemaToApprove.code,
     });
 
@@ -162,7 +159,7 @@ export class SchemaService {
       return { isRenovateNeeded: false };
     }
 
-    const articleVersionWithSiblings =
+    const articleVersionWithSiblings: ArticleVersionWithSiblings =
       await this.articleVersionRepository.findOneWithSiblings({
         code: articleVersionCode,
         languageCode,

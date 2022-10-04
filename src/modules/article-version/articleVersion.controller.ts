@@ -8,7 +8,7 @@ export class ArticleVersionController {
   constructor(private readonly articleVersionService: ArticleVersionService) {}
 
   @Get('/:code')
-  getBArticleVersion(
+  getArticleVersion(
     @Param('language') languageCode: string,
     @Param('code') code: string,
   ) {

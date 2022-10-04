@@ -44,6 +44,7 @@ export class ArticleVersionRepository {
           },
         },
         include: {
+          schema: true,
           articleLanguage: {
             include: {
               articleVersion: {

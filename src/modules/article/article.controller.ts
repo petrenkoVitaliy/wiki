@@ -54,4 +54,16 @@ export class ArticleController {
   ) {
     return this.articleService.createArticle(payload, { languageCode });
   }
+
+  @Post('/:code')
+  addArticleLanguage(
+    @Param('language') languageCode: string,
+    @Param('code') code: string,
+    @Body() payload: CreateArticleDto,
+  ) {
+    return this.articleService.addArticleLanguage(payload, {
+      languageCode,
+      code,
+    });
+  }
 }

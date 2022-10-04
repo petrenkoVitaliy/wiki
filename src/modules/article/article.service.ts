@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 
 import { ArticleLanguageRepository } from '../../repositories/articleLanguage.repository';
 import { ArticleRepository } from '../../repositories/article.repository';
@@ -10,7 +10,6 @@ import {
   ArticleLanguageWithDraftsAggregation,
   ArticlesAggregation,
   ArticleWithVersionsAggregation,
-  LanguageAggregation,
   MappedArticle,
   MappedArticleDrafts,
   MappedArticleShort,
@@ -26,15 +25,13 @@ export class ArticleService {
   ) {}
 
   async getArticle(options: { code: string; languageCode: string }) {
-    const [articleAggregation, additionalLanguages] = await Promise.all([
-      this.articleRepository.findOne(options),
-      this.articleLanguageRepository.getAdditionalLanguages({
-        articleCode: options.code,
-        languageCodeToExclude: options.languageCode,
-      }),
-    ]);
+    const articleAggregation = await this.articleRepository.findOneWithVersions(
+      options,
+    );
 
-    return this.mapToArticleResponse(articleAggregation, additionalLanguages);
+    return this.mapToArticleResponse(articleAggregation, {
+      languageCode: options.languageCode,
+    });
   }
 
   async getAllArticles(languageCode: string) {
@@ -49,7 +46,8 @@ export class ArticleService {
     code: string;
     languageCode: string;
   }) {
-    const articleWithVersions = await this.articleRepository.findOne(options);
+    const articleWithVersions =
+      await this.articleRepository.findOneWithVersions(options);
 
     return this.mapToVersionsResponse(articleWithVersions);
   }
@@ -74,7 +72,46 @@ export class ArticleService {
       languageId: language.id,
     });
 
-    return article;
+    return this.mapToArticleResponse(article, {
+      languageCode: options.languageCode,
+    });
+  }
+
+  async addArticleLanguage(
+    payload: CreateArticleDto,
+    options: { languageCode: string; code: string },
+  ) {
+    const [article, language] = await Promise.all([
+      this.articleRepository.findOne({
+        code: options.code,
+      }),
+
+      this.languageRepository.findOne({ languageCode: options.languageCode }),
+    ]);
+
+    const isArticleLanguageExists = article.articleLanguage.find(
+      (articleLanguage) => articleLanguage.language.code === language.code,
+    );
+
+    if (isArticleLanguageExists) {
+      throw new HttpException(
+        'ArticleLanguage already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    await this.articleLanguageRepository.create(payload, {
+      languageId: language.id,
+      articleCode: article.code,
+    });
+
+    const updatedArticle = await this.articleRepository.findOneWithVersions(
+      options,
+    );
+
+    return this.mapToArticleResponse(updatedArticle, {
+      languageCode: options.languageCode,
+    });
   }
 
   private mapToArticleDraftsResponse(
@@ -148,18 +185,39 @@ export class ArticleService {
 
   private mapToArticleResponse(
     articleAggregation: ArticleAggregation,
-    additionalLanguages?: LanguageAggregation[],
+    options: { languageCode: string },
   ): MappedArticle {
-    const articleLanguage = articleAggregation.articleLanguage[0];
+    const { articleLanguage, additionalLanguages } =
+      articleAggregation.articleLanguage.reduce(
+        (acc, articleLanguage) => {
+          if (articleLanguage.language.code === options.languageCode) {
+            acc.articleLanguage = articleLanguage;
+          } else {
+            acc.additionalLanguages.push(articleLanguage);
+          }
+
+          return acc;
+        },
+        { articleLanguage: null, additionalLanguages: [] } as {
+          articleLanguage: ArticleAggregation['articleLanguage'][0] | null;
+          additionalLanguages: ArticleAggregation['articleLanguage'];
+        },
+      );
 
     if (!articleLanguage) {
-      throw new Error('articleLanguage should exist');
+      throw new HttpException(
+        'ArticleLanguage should exist',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
 
     const articleVersion = articleLanguage.articleVersion[0];
 
     if (!articleVersion) {
-      throw new Error('articleVersion should exist');
+      throw new HttpException(
+        'ArticleVersion should exist',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const languages = additionalLanguages
@@ -205,7 +263,10 @@ export class ArticleService {
       const articleLanguage = articleAggregation.articleLanguage[0];
 
       if (!articleLanguage) {
-        throw new Error('articleLanguage should exist');
+        throw new HttpException(
+          'ArticleLanguage should exist',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
       }
 
       return {

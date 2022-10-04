@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppController } from '../app.controller';
+import { AppService } from '../app.service';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -14,9 +14,9 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return string', () => {
-      expect(typeof appController.getHello()).toBe('string');
+  describe('method: getServerStatus', () => {
+    it('should successfully return server status', () => {
+      expect(appController.getServerStatus()).toBe('still alive...');
     });
   });
 });

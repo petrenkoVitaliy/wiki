@@ -1,4 +1,10 @@
-import { Header, Schema, Body, ArticleVersion } from '@prisma/client';
+import {
+  Header,
+  Schema,
+  Body,
+  ArticleVersion,
+  ArticleLanguage,
+} from '@prisma/client';
 
 export type SchemaAggregation = Schema & {
   parentSchema:
@@ -50,4 +56,16 @@ export type NewArticleVersionResponse = {
       content: string;
     };
   };
+};
+
+export type ArticleVersionWithSiblings = ArticleVersion & {
+  articleLanguage: ArticleLanguage & {
+    articleVersion: (ArticleVersion & {
+      schema: Schema;
+    })[];
+  };
+};
+
+export type BasicArticleVersion = ArticleVersion & {
+  schema: Schema;
 };

@@ -31,3 +31,7 @@ export const notEmptyWithPredicate =
 export const convertNameToCode = (name: string) => {
   return name.toLowerCase().split(' ').join('_');
 };
+
+export const prettyPrint = (data: object) => {
+  process.stdout.write(JSON.stringify(data, null, 2) + '\n');
+};

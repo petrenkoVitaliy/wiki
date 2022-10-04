@@ -9,7 +9,26 @@ import { PrismaService } from '../services/prisma.service';
 export class ArticleRepository {
   constructor(private prisma: PrismaService) {}
 
-  findOne(options: { languageCode: string; code: string }) {
+  findOne(options: { code: string }) {
+    try {
+      return this.prisma.article.findUniqueOrThrow({
+        where: {
+          code: options.code,
+        },
+        include: {
+          articleLanguage: {
+            include: {
+              language: true,
+            },
+          },
+        },
+      });
+    } catch (ex) {
+      throw new HttpException("Article isn't exist", HttpStatus.NOT_FOUND);
+    }
+  }
+
+  findOneWithVersions(options: { languageCode: string; code: string }) {
     try {
       return this.prisma.article.findFirstOrThrow({
         where: {
@@ -126,6 +145,28 @@ export class ArticleRepository {
                   },
                 },
               },
+            },
+          },
+        },
+      },
+      include: {
+        articleLanguage: {
+          include: {
+            language: true,
+            articleVersion: {
+              include: {
+                schema: {
+                  include: {
+                    body: true,
+                    header: true,
+                  },
+                },
+              },
+
+              orderBy: {
+                version: Prisma.SortOrder.desc,
+              },
+              take: 1,
             },
           },
         },

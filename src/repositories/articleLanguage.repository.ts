@@ -1,6 +1,8 @@
 import { HttpException, Injectable, HttpStatus } from '@nestjs/common';
+import { CreateArticleDto } from '../modules/article/article.dtos';
 
 import { PrismaService } from '../services/prisma.service';
+import { convertNameToCode } from '../utils/utils';
 
 @Injectable()
 export class ArticleLanguageRepository {
@@ -50,6 +52,49 @@ export class ArticleLanguageRepository {
         HttpStatus.NOT_FOUND,
       );
     }
+  }
+
+  async create(
+    payload: CreateArticleDto,
+    options: { articleCode: string; languageId: number },
+  ) {
+    return this.prisma.articleLanguage.create({
+      data: {
+        name: payload.name,
+        nameCode: convertNameToCode(payload.name),
+
+        article: {
+          connect: {
+            code: options.articleCode,
+          },
+        },
+
+        language: {
+          connect: {
+            id: options.languageId,
+          },
+        },
+
+        articleVersion: {
+          create: {
+            schema: {
+              create: {
+                body: {
+                  create: {
+                    content: payload.body,
+                  },
+                },
+                header: {
+                  create: {
+                    content: payload.header,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   async getAdditionalLanguages(options: {
