@@ -2,7 +2,7 @@ import type { Config } from 'jest';
 
 const config: Config = {
   verbose: true,
-  coveragePathIgnorePatterns: ['.module.ts'],
+  coveragePathIgnorePatterns: ['.module.ts', 'main.ts', 'routes.'],
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: 'src',
   testRegex: '.*\\.spec\\.ts$',

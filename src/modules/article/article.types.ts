@@ -47,7 +47,7 @@ export type LanguageAggregation = ArticleLanguage & {
   language: Language;
 };
 
-type MappedSchema = {
+export type MappedSchema = {
   code: string;
   body?: {
     content: string;
@@ -60,7 +60,7 @@ type MappedSchema = {
 export type MappedArticle = {
   languages: string[] | undefined;
   articleLanguage: {
-    version?: {
+    version: {
       schema: MappedSchema;
       code: string;
       version: number;

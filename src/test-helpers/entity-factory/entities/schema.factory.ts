@@ -40,16 +40,13 @@ export class SchemaFactory {
     childSchema: SchemaWithContent[];
     articleVersion?: ArticleVersion;
   } {
+    const basicEntity = this.basic({});
+
     const body = this.body.basic();
     const header = this.header.basic();
 
-    const code = `schema_code_${++this.entitySeq}`;
-
     return {
-      code,
-
-      enabled: true,
-      archived: false,
+      ...basicEntity,
 
       parentCode: options.parentSchema?.code || null,
       parentSchema: options.parentSchema,
@@ -62,9 +59,6 @@ export class SchemaFactory {
 
       headerId: header.id,
       header,
-
-      updatedAt: new Date(),
-      createdAt: new Date(),
     };
   }
 }
