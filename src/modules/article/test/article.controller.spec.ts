@@ -194,7 +194,7 @@ describe('ArticleController', () => {
     });
   });
 
-  describe('method: getArticlesWithVersions', () => {
+  describe('method: getArticleWithVersions', () => {
     it('should successfully return articles with version', async () => {
       const { article, articleVersion } = getArticleAggregation(
         entityFactory,
@@ -204,7 +204,7 @@ describe('ArticleController', () => {
       PrismaMock.article.findFirstOrThrow.mockResolvedValue(article);
 
       const articleResponse =
-        await module.articleController.getArticlesWithVersions(
+        await module.articleController.getArticleWithVersions(
           article.code,
           languages.UA.code,
         );
@@ -225,7 +225,7 @@ describe('ArticleController', () => {
       );
 
       expect(
-        module.articleController.getArticlesWithVersions(
+        module.articleController.getArticleWithVersions(
           article.code,
           languages.UA.code,
         ),

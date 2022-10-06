@@ -7,9 +7,9 @@ import { PrismaService } from '../services/prisma.service';
 export class ArticleVersionRepository {
   constructor(private prisma: PrismaService) {}
 
-  findOne(options: { code: string; languageCode: string }) {
+  async findOne(options: { code: string; languageCode: string }) {
     try {
-      return this.prisma.articleVersion.findFirstOrThrow({
+      const result = await this.prisma.articleVersion.findFirstOrThrow({
         where: {
           code: options.code,
           articleLanguage: {
@@ -26,6 +26,8 @@ export class ArticleVersionRepository {
           },
         },
       });
+
+      return result;
     } catch (ex) {
       throw new HttpException(
         "Article version isn't exist",
@@ -34,9 +36,9 @@ export class ArticleVersionRepository {
     }
   }
 
-  findOneWithSiblings(options: { code: string; languageCode: string }) {
+  async findOneWithSiblings(options: { code: string; languageCode: string }) {
     try {
-      return this.prisma.articleVersion.findFirstOrThrow({
+      const result = await this.prisma.articleVersion.findFirstOrThrow({
         where: {
           code: options.code,
           articleLanguage: {
@@ -59,6 +61,8 @@ export class ArticleVersionRepository {
           },
         },
       });
+
+      return result;
     } catch (ex) {
       throw new HttpException(
         "Article version isn't exist",

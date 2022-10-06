@@ -8,9 +8,9 @@ import { convertNameToCode } from '../utils/utils';
 export class ArticleLanguageRepository {
   constructor(private prisma: PrismaService) {}
 
-  findOne(options: { articleCode: string; languageCode: string }) {
+  async findOne(options: { articleCode: string; languageCode: string }) {
     try {
-      return this.prisma.articleLanguage.findFirstOrThrow({
+      const result = await this.prisma.articleLanguage.findFirstOrThrow({
         where: {
           enabled: true,
           language: {
@@ -46,6 +46,8 @@ export class ArticleLanguageRepository {
           },
         },
       });
+
+      return result;
     } catch (ex) {
       throw new HttpException(
         "Article language isn't exist",

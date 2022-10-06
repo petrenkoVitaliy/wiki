@@ -26,11 +26,11 @@ export class ArticleController {
   }
 
   @Get('/:code/version')
-  getArticlesWithVersions(
+  getArticleWithVersions(
     @Param('code') code: string,
     @Param('language') languageCode: string,
   ) {
-    return this.articleService.getArticlesWithVersions({
+    return this.articleService.getArticleWithVersions({
       code,
       languageCode,
     });

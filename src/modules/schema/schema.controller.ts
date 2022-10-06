@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateSchemaDto } from './schema.dtos';
 import { SchemaService } from './schema.service';
@@ -48,6 +57,7 @@ export class SchemaController {
   }
 
   @Put('/:code/renovate')
+  @HttpCode(HttpStatus.OK)
   renovateDraftSchema(
     @Param('code') code: string,
     @Param('language') languageCode: string,
@@ -62,6 +72,7 @@ export class SchemaController {
   }
 
   @Post('/:code/approve')
+  @HttpCode(HttpStatus.OK)
   approveDraft(
     @Param('article_version_code') articleVersionCode: string,
     @Param('code') code: string,

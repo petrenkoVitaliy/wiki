@@ -7,9 +7,9 @@ import { PrismaService } from '../services/prisma.service';
 export class SchemaRepository {
   constructor(private prisma: PrismaService) {}
 
-  findOne(options: { code: string }) {
+  async findOne(options: { code: string }) {
     try {
-      return this.prisma.schema.findUniqueOrThrow({
+      const result = await this.prisma.schema.findUniqueOrThrow({
         where: {
           code: options.code,
         },
@@ -17,18 +17,20 @@ export class SchemaRepository {
           parentSchema: true,
         },
       });
+
+      return result;
     } catch (ex) {
       throw new HttpException("Schema isn't exist", HttpStatus.NOT_FOUND);
     }
   }
 
-  findOneWithParent(options: {
+  async findOneWithParent(options: {
     code: string;
     articleVersionCode: string;
     languageCode: string;
   }) {
     try {
-      return this.prisma.schema.findFirstOrThrow({
+      const result = await this.prisma.schema.findFirstOrThrow({
         where: {
           code: options.code,
           OR: [
@@ -72,6 +74,8 @@ export class SchemaRepository {
           },
         },
       });
+
+      return result;
     } catch (ex) {
       throw new HttpException("Schema isn't exist", HttpStatus.NOT_FOUND);
     }
@@ -101,11 +105,15 @@ export class SchemaRepository {
       },
 
       data: {
-        parentSchema: {
-          connect: {
-            code: parentCode,
-          },
-        },
+        ...(parentCode
+          ? {
+              parentSchema: {
+                connect: {
+                  code: parentCode,
+                },
+              },
+            }
+          : null),
 
         body: {
           // TODO delete + create unique

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { HttpStatus, INestApplication } from '@nestjs/common';
 import { RouterModule } from '@nestjs/core';
 
 import { ArticleModule } from '../../src/modules/article/article.module';
@@ -20,6 +20,7 @@ import {
   createArticleRequest,
   createDraftRequest,
   getArticleDraftsRequest,
+  getArticleRequest,
 } from '../helpers/api-request';
 
 describe('User flow: article creation', () => {
@@ -42,7 +43,7 @@ describe('User flow: article creation', () => {
     await app.init();
   });
 
-  describe('Article Creation', () => {
+  describe('Article creation', () => {
     const context = {} as {
       createdArticleEN: MappedArticle;
       createdArticleUA: MappedArticle;
@@ -62,6 +63,26 @@ describe('User flow: article creation', () => {
       context.createdArticleEN = await createArticleRequest(app, {
         languageCode: DefaultLanguages.EN,
         articleDTO,
+      });
+    });
+
+    it('Should fail to create new article with same name', async () => {
+      const articleDTO = {
+        name: 'article_en_1',
+        body: 'body_en_1',
+        header: 'header_en_1',
+        categoriesIds: [],
+      };
+
+      const errorResponse = await createArticleRequest(app, {
+        languageCode: DefaultLanguages.EN,
+        articleDTO,
+        responseStatus: HttpStatus.CONFLICT,
+      });
+
+      expect(errorResponse).toEqual({
+        message: 'Article name must be unique',
+        statusCode: HttpStatus.CONFLICT,
       });
     });
 
@@ -138,8 +159,33 @@ describe('User flow: article creation', () => {
         },
         {
           article: context.createdArticleUA,
-          draft1: context.createdDraft1,
-          draft2: context.createdDraft2,
+          articleVersions: [
+            {
+              version: context.createdArticleUA.articleLanguage.version.version,
+              schemaDTO: {
+                body: context.createdArticleUA.articleLanguage.version.schema
+                  .body?.content,
+                header:
+                  context.createdArticleUA.articleLanguage.version.schema.header
+                    ?.content,
+              },
+              drafts: [context.createdDraft1, context.createdDraft2],
+            },
+          ],
+        },
+      );
+    });
+
+    it('Should successfully get article', async () => {
+      await getArticleRequest(
+        app,
+        {
+          languageCode: DefaultLanguages.UA,
+          code: context.createdArticleUA.code,
+        },
+        {
+          articleLanguageName: context.createdArticleUA.articleLanguage.name,
+          createdLanguages: [DefaultLanguages.EN],
         },
       );
     });

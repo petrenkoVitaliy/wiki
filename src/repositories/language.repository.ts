@@ -8,11 +8,13 @@ export class LanguageRepository {
 
   async findOne(options: { languageCode: string }) {
     try {
-      return this.prisma.language.findFirstOrThrow({
+      const result = await this.prisma.language.findFirstOrThrow({
         where: {
           code: options.languageCode,
         },
       });
+
+      return result;
     } catch (ex) {
       throw new HttpException("Language isn't exist", HttpStatus.NOT_FOUND);
     }

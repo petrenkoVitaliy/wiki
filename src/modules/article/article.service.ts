@@ -42,7 +42,7 @@ export class ArticleService {
     return this.mapToAllArticlesResponse(articlesAggregation);
   }
 
-  async getArticlesWithVersions(options: {
+  async getArticleWithVersions(options: {
     code: string;
     languageCode: string;
   }) {

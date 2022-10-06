@@ -9,9 +9,9 @@ import { PrismaService } from '../services/prisma.service';
 export class ArticleRepository {
   constructor(private prisma: PrismaService) {}
 
-  findOne(options: { code: string }) {
+  async findOne(options: { code: string }) {
     try {
-      return this.prisma.article.findUniqueOrThrow({
+      const result = await this.prisma.article.findUniqueOrThrow({
         where: {
           code: options.code,
         },
@@ -23,14 +23,16 @@ export class ArticleRepository {
           },
         },
       });
+
+      return result;
     } catch (ex) {
       throw new HttpException("Article isn't exist", HttpStatus.NOT_FOUND);
     }
   }
 
-  findOneWithVersions(options: { languageCode: string; code: string }) {
+  async findOneWithVersions(options: { languageCode: string; code: string }) {
     try {
-      return this.prisma.article.findFirstOrThrow({
+      const result = await this.prisma.article.findFirstOrThrow({
         where: {
           code: options.code,
           articleLanguage: {
@@ -64,6 +66,8 @@ export class ArticleRepository {
           },
         },
       });
+
+      return result;
     } catch (ex) {
       throw new HttpException("Article isn't exist", HttpStatus.NOT_FOUND);
     }
@@ -97,49 +101,51 @@ export class ArticleRepository {
     });
   }
 
-  create(payload: CreateArticleDto, options: { languageId: number }) {
-    return this.prisma.article.create({
-      data: {
-        enabled: false,
-        type: ArticleType.common,
+  async create(payload: CreateArticleDto, options: { languageId: number }) {
+    try {
+      const result = await this.prisma.article.create({
+        data: {
+          enabled: false,
+          type: ArticleType.common,
 
-        ...(payload.categoriesIds.length
-          ? {
-              articleCategories: {
-                create: payload.categoriesIds.map((categoryId) => ({
-                  category: {
-                    connect: {
-                      id: categoryId,
-                    },
-                  },
-                })),
-              },
-            }
-          : null),
-
-        articleLanguage: {
-          create: {
-            name: payload.name,
-            nameCode: convertNameToCode(payload.name),
-
-            language: {
-              connect: {
-                id: options.languageId,
-              },
-            },
-
-            articleVersion: {
-              create: {
-                schema: {
-                  create: {
-                    body: {
-                      create: {
-                        content: payload.body,
+          ...(payload.categoriesIds.length
+            ? {
+                articleCategories: {
+                  create: payload.categoriesIds.map((categoryId) => ({
+                    category: {
+                      connect: {
+                        id: categoryId,
                       },
                     },
-                    header: {
-                      create: {
-                        content: payload.header,
+                  })),
+                },
+              }
+            : null),
+
+          articleLanguage: {
+            create: {
+              name: payload.name,
+              nameCode: convertNameToCode(payload.name),
+
+              language: {
+                connect: {
+                  id: options.languageId,
+                },
+              },
+
+              articleVersion: {
+                create: {
+                  schema: {
+                    create: {
+                      body: {
+                        create: {
+                          content: payload.body,
+                        },
+                      },
+                      header: {
+                        create: {
+                          content: payload.header,
+                        },
                       },
                     },
                   },
@@ -148,29 +154,41 @@ export class ArticleRepository {
             },
           },
         },
-      },
-      include: {
-        articleLanguage: {
-          include: {
-            language: true,
-            articleVersion: {
-              include: {
-                schema: {
-                  include: {
-                    body: true,
-                    header: true,
+        include: {
+          articleLanguage: {
+            include: {
+              language: true,
+              articleVersion: {
+                include: {
+                  schema: {
+                    include: {
+                      body: true,
+                      header: true,
+                    },
                   },
                 },
-              },
 
-              orderBy: {
-                version: Prisma.SortOrder.desc,
+                orderBy: {
+                  version: Prisma.SortOrder.desc,
+                },
+                take: 1,
               },
-              take: 1,
             },
           },
         },
-      },
-    });
+      });
+
+      return result;
+    } catch (ex) {
+      if (ex instanceof Prisma.PrismaClientKnownRequestError) {
+        if (ex.code === 'P2002') {
+          throw new HttpException(
+            'Article name must be unique',
+            HttpStatus.CONFLICT,
+          );
+        }
+      }
+      throw ex;
+    }
   }
 }
