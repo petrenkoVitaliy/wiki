@@ -8,8 +8,8 @@ import { LanguageRepository } from '../../../repositories/language.repository';
 import { ArticleController } from '../article.controller';
 import { ArticleService } from '../article.service';
 
-import { PrismaService } from '../../../services/prisma.service';
-import { PrismaMock } from '../../../services/prismaMock.service';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { PrismaMock } from '../../../prisma/prismaMock.service';
 import {
   EntityFactory,
   EntityFactoryModule,
@@ -101,10 +101,14 @@ describe('ArticleController', () => {
 
   describe('method: getArticle', () => {
     it('should successfully return article', async () => {
-      const { article, articleLanguage, articleVersion } = getArticleAggregation(
+      const { article, articleLanguages, articleVersion } = getArticleAggregation({
         entityFactory,
-        languages.UA,
-      );
+        languages: [languages.UA, languages.EN],
+      });
+
+      const articleLanguageUA = articleLanguages.find(
+        (articleLanguage) => articleLanguage.language.code === languages.UA.code,
+      ) as LanguageAggregation;
 
       PrismaMock.article.findFirstOrThrow.mockResolvedValue(article);
 
@@ -117,10 +121,11 @@ describe('ArticleController', () => {
         code: article.code,
         type: article.type,
 
-        languages: [],
+        languages: [languages.EN.code],
 
         articleLanguage: {
-          name: articleLanguage.name,
+          name: articleLanguageUA.name,
+          code: articleLanguageUA.code,
           version: {
             code: articleVersion.code,
             version: articleVersion.version,
@@ -176,7 +181,10 @@ describe('ArticleController', () => {
 
   describe('method: getArticleWithVersions', () => {
     it('should successfully return articles with version', async () => {
-      const { article, articleVersion } = getArticleAggregation(entityFactory, languages.UA);
+      const { article, articleVersion } = getArticleAggregation({
+        entityFactory,
+        languages: [languages.UA],
+      });
 
       PrismaMock.article.findFirstOrThrow.mockResolvedValue(article);
 
@@ -278,10 +286,10 @@ describe('ArticleController', () => {
 
   describe('method: createArticle', () => {
     it('should successfully create article', async () => {
-      const { article, articleLanguage, articleVersion } = getArticleAggregation(
+      const { article, articleLanguages, articleVersion } = getArticleAggregation({
         entityFactory,
-        languages.UA,
-      );
+        languages: [languages.UA],
+      });
 
       PrismaMock.language.findFirstOrThrow.mockResolvedValue(languages.UA);
       PrismaMock.article.create.mockResolvedValue(article);
@@ -296,7 +304,8 @@ describe('ArticleController', () => {
         type: article.type,
         languages: [],
         articleLanguage: {
-          name: articleLanguage.name,
+          name: articleLanguages[0].name,
+          code: articleLanguages[0].code,
           version: {
             code: articleVersion.code,
             version: articleVersion.version,
@@ -311,7 +320,10 @@ describe('ArticleController', () => {
     });
 
     it('should handle error', async () => {
-      const { article } = getArticleAggregation(entityFactory, languages.UA);
+      const { article } = getArticleAggregation({
+        entityFactory,
+        languages: [languages.UA],
+      });
 
       PrismaMock.language.findFirstOrThrow.mockRejectedValue(new Error("Language isn't exist"));
       PrismaMock.article.create.mockResolvedValue(article);
@@ -324,12 +336,15 @@ describe('ArticleController', () => {
 
   describe('method: addArticleLanguage', () => {
     it('should successfully add article language', async () => {
-      const { article: articleUA } = getArticleAggregation(entityFactory, languages.UA);
-
-      const { article, articleLanguage, articleVersion } = getArticleAggregation(
+      const { article: articleUA } = getArticleAggregation({
         entityFactory,
-        languages.EN,
-      );
+        languages: [languages.UA],
+      });
+
+      const { article, articleLanguages, articleVersion } = getArticleAggregation({
+        entityFactory,
+        languages: [languages.EN],
+      });
 
       PrismaMock.language.findFirstOrThrow.mockResolvedValue(languages.EN);
       PrismaMock.article.findFirstOrThrow
@@ -349,7 +364,8 @@ describe('ArticleController', () => {
         type: article.type,
         languages: [],
         articleLanguage: {
-          name: articleLanguage.name,
+          name: articleLanguages[0].name,
+          code: articleLanguages[0].code,
           version: {
             code: articleVersion.code,
             version: articleVersion.version,
@@ -364,7 +380,10 @@ describe('ArticleController', () => {
     });
 
     it('should not add existing article language', async () => {
-      const { article } = getArticleAggregation(entityFactory, languages.UA);
+      const { article } = getArticleAggregation({
+        entityFactory,
+        languages: [languages.UA],
+      });
 
       PrismaMock.language.findFirstOrThrow.mockResolvedValue(languages.UA);
       PrismaMock.article.findFirstOrThrow.mockResolvedValue(article);
@@ -380,11 +399,20 @@ describe('ArticleController', () => {
     });
 
     it('should handle disabled article error', async () => {
-      const { article: articleUA } = getArticleAggregation(entityFactory, languages.UA, {
-        enabled: false,
-      });
+      const { article: articleUA } = getArticleAggregation(
+        {
+          entityFactory,
+          languages: [languages.UA],
+        },
+        {
+          enabled: false,
+        },
+      );
 
-      const { article } = getArticleAggregation(entityFactory, languages.EN);
+      const { article } = getArticleAggregation({
+        entityFactory,
+        languages: [languages.EN],
+      });
 
       PrismaMock.language.findFirstOrThrow.mockResolvedValue(languages.EN);
       PrismaMock.article.findFirstOrThrow.mockResolvedValue(articleUA);
@@ -401,7 +429,10 @@ describe('ArticleController', () => {
 
   describe('method: deleteArticle', () => {
     it('should successfully delete article', async () => {
-      const { article } = getArticleAggregation(entityFactory, languages.UA);
+      const { article } = getArticleAggregation({
+        entityFactory,
+        languages: [languages.UA],
+      });
 
       PrismaMock.article.update.mockResolvedValue(article);
 
@@ -415,10 +446,10 @@ describe('ArticleController', () => {
 
   describe('method: patchArticle', () => {
     it('should successfully update article', async () => {
-      const { article, articleLanguage, articleVersion } = getArticleAggregation(
+      const { article, articleLanguages, articleVersion } = getArticleAggregation({
         entityFactory,
-        languages.UA,
-      );
+        languages: [languages.UA],
+      });
 
       PrismaMock.article.update.mockResolvedValue(article);
 
@@ -435,7 +466,8 @@ describe('ArticleController', () => {
         type: article.type,
         languages: [],
         articleLanguage: {
-          name: articleLanguage.name,
+          name: articleLanguages[0].name,
+          code: articleLanguages[0].code,
           version: {
             code: articleVersion.code,
             version: articleVersion.version,

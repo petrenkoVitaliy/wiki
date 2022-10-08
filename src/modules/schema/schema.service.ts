@@ -3,7 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { convertNullable } from '../../utils/utils';
 import { SchemaRepository } from '../../repositories/schema.repository';
 import { ArticleVersionRepository } from '../../repositories/articleVersion.repository';
-import { PrismaService } from '../../services/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSchemaDto } from './schema.dtos';
 import {
   ArticleVersionAggregation,
@@ -125,7 +125,7 @@ export class SchemaService {
 
     const isPrimarySchema = !schemaToApprove.parentSchema?.code;
     const isCorrectDraftRelation =
-      schemaToApprove?.parentSchema?.code === parentArticleVersion.schema.code;
+      schemaToApprove.parentSchema?.code === parentArticleVersion.schema.code;
 
     if (!isCorrectDraftRelation || isPrimarySchema) {
       throw new HttpException('Invalid schema to approve', HttpStatus.FORBIDDEN);
@@ -136,10 +136,14 @@ export class SchemaService {
         code: options.code,
         parentCode: null,
       }),
-      this.articleVersionRepository.update({
-        code: parentArticleVersion.code,
-        actual: null,
-      }),
+      this.articleVersionRepository.update(
+        {
+          code: parentArticleVersion.code,
+        },
+        {
+          actual: null,
+        },
+      ),
       this.articleVersionRepository.create({
         articleLanguageCode: parentArticleVersion.articleLanguageCode,
         schemaCode: schemaToApprove.code,

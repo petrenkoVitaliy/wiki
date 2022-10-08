@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Language } from '@prisma/client';
 
 import { ArticleVersionRepository } from '../../../repositories/articleVersion.repository';
-import { PrismaService } from '../../../services/prisma.service';
-import { PrismaMock } from '../../../services/prismaMock.service';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { PrismaMock } from '../../../prisma/prismaMock.service';
 import { ArticleVersionController } from '../articleVersion.controller';
 import { ArticleVersionService } from '../articleVersion.service';
 
@@ -38,6 +38,59 @@ describe('ArticleVersionController', () => {
 
     languages.UA = entityFactory.language.basic({ code: DefaultLanguages.UA });
     languages.EN = entityFactory.language.basic({ code: DefaultLanguages.EN });
+  });
+
+  describe('method: patchArticleVersion', () => {
+    it('should successfully patch article version', async () => {
+      const schema = entityFactory.schema.extended({});
+      const articleVersion = entityFactory.articleVersion.extended({
+        schema,
+        enabled: false,
+      }) as ArticleVersionAggregation;
+
+      PrismaMock.articleVersion.update.mockResolvedValue(articleVersion);
+
+      const updatedArticleVersion = await module.articleVersionController.patchArticleVersion(
+        articleVersion.code,
+        {
+          enabled: false,
+        },
+      );
+
+      expect(updatedArticleVersion).toEqual({
+        code: articleVersion.code,
+        version: articleVersion.version,
+        schema: {
+          code: schema.code,
+          body: {
+            content: schema.body?.content,
+          },
+          header: {
+            content: schema.header?.content,
+          },
+        },
+      });
+    });
+  });
+
+  describe('method: deleteArticleVersion', () => {
+    it('should successfully delete article version', async () => {
+      const schema = entityFactory.schema.extended({});
+      const articleVersion = entityFactory.articleVersion.extended({
+        schema,
+        enabled: false,
+      }) as ArticleVersionAggregation;
+
+      PrismaMock.articleVersion.update.mockResolvedValue(articleVersion);
+
+      const deletedArticleVersion = await module.articleVersionController.deleteArticleVersion(
+        articleVersion.code,
+      );
+
+      expect(deletedArticleVersion).toEqual({
+        code: articleVersion.code,
+      });
+    });
   });
 
   describe('method: getArticleVersion', () => {

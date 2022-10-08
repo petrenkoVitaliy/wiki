@@ -1,41 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { RouterModule } from '@nestjs/core';
-
-import { ArticleModule } from '../../src/modules/article/article.module';
-import { CategoryModule } from '../../src/modules/category/category.module';
-import { SchemaModule } from '../../src/modules/schema/schema.module';
-import { ArticleVersionModule } from '../../src/modules/article-version/articleVersion.module';
-import { AppController } from '../../src/modules/app/app.controller';
-import { AppService } from '../../src/modules/app/app.service';
-import { ROUTES } from '../../src/routes/routes';
 import { DefaultLanguages } from '../../src/constants/constants';
 import { MappedArticle } from '../../src/modules/article/article.types';
-import {
-  createArticleRequest,
-  deleteArticleRequest,
-  getArticleRequest,
-  patchArticleRequest,
-} from '../helpers/api-request';
+
+import { articleRequest } from '../helpers/request/article.request';
+import { PrismaService } from '../../src/prisma/prisma.service';
+import { closeConnection, initTestModule } from '../helpers/hook';
 
 describe('User flow: update article', () => {
   let app: INestApplication;
+  let prismaService: PrismaService;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        ArticleModule,
-        CategoryModule,
-        SchemaModule,
-        ArticleVersionModule,
-        RouterModule.register(ROUTES),
-      ],
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
+  beforeAll(async () => {
+    ({ app, prismaService } = await initTestModule());
+  });
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
+  afterAll(async () => {
+    await closeConnection(app, prismaService);
   });
 
   const context = {} as {
@@ -45,18 +25,18 @@ describe('User flow: update article', () => {
 
   it('Should successfully create and update article', async () => {
     const articleDTO = {
-      name: 'article_1',
+      name: 'update_article_test_article_ua_1',
       body: 'body_1',
       header: 'header_1',
       categoriesIds: [],
     };
 
-    context.createdArticleUA = await createArticleRequest(app, {
+    context.createdArticleUA = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.UA,
       articleDTO,
     });
 
-    context.createdArticleUA = await patchArticleRequest(
+    context.createdArticleUA = await articleRequest.patchArticle(
       app,
       {
         code: context.createdArticleUA.code,
@@ -74,7 +54,7 @@ describe('User flow: update article', () => {
   });
 
   it('Should successfully handle not existence errors', async () => {
-    await patchArticleRequest(app, {
+    await articleRequest.patchArticle(app, {
       code: 'incorrect code',
       languageCode: DefaultLanguages.UA,
       articleDTO: {
@@ -83,7 +63,7 @@ describe('User flow: update article', () => {
       responseStatus: HttpStatus.NOT_FOUND,
     });
 
-    await getArticleRequest(app, {
+    await articleRequest.getArticle(app, {
       code: context.createdArticleUA.code,
       languageCode: DefaultLanguages.UA,
       responseStatus: HttpStatus.NOT_FOUND,
@@ -92,34 +72,34 @@ describe('User flow: update article', () => {
 
   it('Should successfully create and delete article', async () => {
     const articleDTO = {
-      name: 'article_2',
+      name: 'update_article_test_article_en_2',
       body: 'body_2',
       header: 'header_2',
       categoriesIds: [],
     };
 
-    context.createdArticleEN = await createArticleRequest(app, {
+    context.createdArticleEN = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.EN,
       articleDTO,
     });
 
-    await getArticleRequest(app, {
+    await articleRequest.getArticle(app, {
       code: context.createdArticleEN.code,
       languageCode: DefaultLanguages.EN,
     });
 
-    await deleteArticleRequest(app, {
+    await articleRequest.deleteArticle(app, {
       code: 'incorrect code',
       languageCode: DefaultLanguages.EN,
       responseStatus: HttpStatus.NOT_FOUND,
     });
 
-    await deleteArticleRequest(app, {
+    await articleRequest.deleteArticle(app, {
       code: context.createdArticleEN.code,
       languageCode: DefaultLanguages.EN,
     });
 
-    await getArticleRequest(app, {
+    await articleRequest.getArticle(app, {
       code: context.createdArticleEN.code,
       languageCode: DefaultLanguages.EN,
       responseStatus: HttpStatus.NOT_FOUND,

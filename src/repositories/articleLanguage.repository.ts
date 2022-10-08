@@ -1,7 +1,7 @@
 import { HttpException, Injectable, HttpStatus } from '@nestjs/common';
 import { CreateArticleDto } from '../modules/article/article.dtos';
 
-import { PrismaService } from '../services/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { convertNameToCode } from '../utils/utils';
 
 @Injectable()
@@ -56,7 +56,28 @@ export class ArticleLanguageRepository {
     }
   }
 
-  async create(payload: CreateArticleDto, options: { articleCode: string; languageId: number }) {
+  update(
+    options: { code: string },
+    payload: { name?: string; enabled?: boolean; archived?: boolean },
+  ) {
+    return this.prisma.articleLanguage.update({
+      where: {
+        code: options.code,
+      },
+      data: {
+        enabled: payload.enabled,
+        archived: payload.archived,
+        ...(payload.name
+          ? {
+              name: payload.name,
+              nameCode: convertNameToCode(payload.name),
+            }
+          : null),
+      },
+    });
+  }
+
+  create(payload: CreateArticleDto, options: { articleCode: string; languageId: number }) {
     return this.prisma.articleLanguage.create({
       data: {
         name: payload.name,

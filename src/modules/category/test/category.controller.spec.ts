@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Language } from '@prisma/client';
 
 import { CategoryRepository } from '../../../repositories/category.repository';
-import { PrismaService } from '../../../services/prisma.service';
-import { PrismaMock } from '../../../services/prismaMock.service';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { PrismaMock } from '../../../prisma/prismaMock.service';
 import { CategoryController } from '../category.controller';
 import { CategoryService } from '../category.service';
 

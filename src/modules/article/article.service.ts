@@ -226,9 +226,9 @@ export class ArticleService {
       throw new HttpException('ArticleVersion should exist', HttpStatus.BAD_REQUEST);
     }
 
-    const languages = additionalLanguages
+    const languages = additionalLanguages.length
       ? additionalLanguages.map((additionalLanguage) => additionalLanguage.language.code)
-      : undefined;
+      : [];
 
     return {
       ...pick(articleAggregation, ['code', 'type']),
@@ -236,7 +236,7 @@ export class ArticleService {
       languages,
 
       articleLanguage: {
-        ...pick(articleLanguage, ['name']),
+        ...pick(articleLanguage, ['name', 'code']),
 
         version: {
           ...pick(articleVersion, ['code', 'version']),

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PatchArticleVersionDto } from './articleVersion.dtos';
 import { ArticleVersionService } from './articleVersion.service';
@@ -21,6 +21,13 @@ export class ArticleVersionController {
     return this.articleVersionService.patchArticleVersion({
       code,
       payload,
+    });
+  }
+
+  @Delete('/:code')
+  deleteArticleVersion(@Param('code') code: string) {
+    return this.articleVersionService.deleteArticleVersion({
+      code,
     });
   }
 }

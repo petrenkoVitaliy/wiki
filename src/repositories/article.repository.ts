@@ -3,7 +3,7 @@ import { ArticleType, Prisma } from '@prisma/client';
 
 import { convertNameToCode } from '../utils/utils';
 import { CreateArticleDto } from '../modules/article/article.dtos';
-import { PrismaService } from '../services/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { UpdateArticleOptions } from '../modules/article/article.types';
 
 @Injectable()
@@ -47,6 +47,8 @@ export class ArticleRepository {
           enabled: options.enabled,
           articleLanguage: {
             some: {
+              archived: false,
+              enabled: options.enabled,
               language: {
                 code: options.languageCode,
               },
@@ -95,6 +97,9 @@ export class ArticleRepository {
 
         articleLanguage: {
           some: {
+            archived: false,
+            enabled: true,
+
             language: {
               code: options.languageCode,
             },

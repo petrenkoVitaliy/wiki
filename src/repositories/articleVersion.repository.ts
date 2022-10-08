@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Argument, Conditional } from 'src/types/utilityTypes';
 
-import { PrismaService } from '../services/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ArticleVersionRepository {
@@ -88,21 +88,21 @@ export class ArticleVersionRepository {
     });
   }
 
-  update<T extends boolean>(options: {
-    code: string;
-    actual?: true | null;
-    archived?: boolean;
-    enabled?: boolean;
-    isExtended?: T;
-  }) {
+  update<T extends boolean>(
+    options: {
+      code: string;
+      isExtended?: T;
+    },
+    payload: { actual?: true | null; archived?: boolean; enabled?: boolean },
+  ) {
     const updateOptions = {
       where: {
         code: options.code,
       },
       data: {
-        actual: options.actual,
-        archived: options.archived,
-        enabled: options.enabled,
+        actual: payload.actual,
+        archived: payload.archived,
+        enabled: payload.enabled,
       },
     };
 
@@ -129,18 +129,14 @@ export class ArticleVersionRepository {
   >(options: { updateOptions: P; isExtended?: T; include: R }) {
     const { updateOptions, include } = options;
 
-    type A1 = ReturnType<
-      typeof this.UpdateMethodType<typeof updateOptions & { include: typeof include }>
-    >;
-
-    type A2 = ReturnType<typeof this.UpdateMethodType<typeof updateOptions>>;
-
-    type UpdateResult = Conditional<T, A1, A2>;
-
     return this.prisma.articleVersion.update({
       ...updateOptions,
       include: options.isExtended ? include : null,
-    }) as UpdateResult;
+    }) as Conditional<
+      T,
+      ReturnType<typeof this.UpdateMethodType<typeof updateOptions & { include: typeof include }>>,
+      ReturnType<typeof this.UpdateMethodType<typeof updateOptions>>
+    >;
   }
 }
 

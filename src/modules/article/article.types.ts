@@ -65,6 +65,7 @@ export type MappedArticle = {
       code: string;
       version: number;
     };
+    code: string;
     name: string;
   };
   code: string;

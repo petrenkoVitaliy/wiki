@@ -7,6 +7,7 @@ import { AppModule } from '../modules/app/app.module';
 import { ArticleVersionModule } from '../modules/article-version/articleVersion.module';
 import { ArticleModule } from '../modules/article/article.module';
 import { CategoryModule } from '../modules/category/category.module';
+import { ArticleLanguageModule } from '../modules/article-language/articleLanguage.module';
 
 const prefixedRoutes: PrefixedRouteTree[] = [
   {
@@ -19,6 +20,15 @@ const prefixedRoutes: PrefixedRouteTree[] = [
         {
           path: 'article',
           module: ArticleModule,
+          prefixedChildren: {
+            prefix: ':article_code',
+            children: [
+              {
+                path: 'article-language',
+                module: ArticleLanguageModule,
+              },
+            ],
+          },
         },
         {
           path: 'article-version',

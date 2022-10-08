@@ -8,32 +8,39 @@ import {
 } from '../article.types';
 
 export const getArticleAggregation = (
-  entityFactory: EntityFactoryModule,
-  language: Language,
+  params: {
+    entityFactory: EntityFactoryModule;
+    languages: Language[];
+  },
   options?: {
     enabled?: boolean;
     archived?: boolean;
   },
 ) => {
+  const { entityFactory, languages } = params;
+
   const schema = entityFactory.schema.extended({});
   const articleVersion = entityFactory.articleVersion.extended({
     schema,
     actual: true,
   });
-  const articleLanguage = entityFactory.articleLanguage.extended({
-    language,
-    articleVersion: [articleVersion],
-  }) as LanguageAggregation;
+
+  const articleLanguages = languages.map((language) =>
+    entityFactory.articleLanguage.extended({
+      language,
+      articleVersion: [articleVersion],
+    }),
+  ) as LanguageAggregation[];
 
   const article = entityFactory.article.extended({
     ...options,
-    articleLanguage: [articleLanguage],
+    articleLanguage: articleLanguages,
   }) as ArticleAggregation;
 
   return {
     schema,
     article,
-    articleLanguage,
+    articleLanguages,
     articleVersion,
   };
 };

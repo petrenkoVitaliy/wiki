@@ -22,12 +22,28 @@ export class ArticleVersionService {
   }
 
   async patchArticleVersion(options: { code: string; payload: PatchArticleVersionDto }) {
-    const articleVersion = await this.articleVersionRepository.update({
-      ...options,
-      isExtended: true,
-    });
+    const articleVersion = await this.articleVersionRepository.update(
+      {
+        code: options.code,
+        isExtended: true,
+      },
+      options.payload,
+    );
 
     return this.mapToArticleVersionResponse(articleVersion);
+  }
+
+  async deleteArticleVersion(options: { code: string }) {
+    const articleVersion = await this.articleVersionRepository.update(
+      {
+        code: options.code,
+      },
+      { archived: true },
+    );
+
+    return {
+      code: articleVersion.code,
+    };
   }
 
   private mapToArticleVersionResponse(

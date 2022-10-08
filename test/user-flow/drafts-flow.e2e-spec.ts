@@ -1,46 +1,23 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { RouterModule } from '@nestjs/core';
-
-import { ArticleModule } from '../../src/modules/article/article.module';
-import { CategoryModule } from '../../src/modules/category/category.module';
-import { SchemaModule } from '../../src/modules/schema/schema.module';
-import { ArticleVersionModule } from '../../src/modules/article-version/articleVersion.module';
-import { AppController } from '../../src/modules/app/app.controller';
-import { AppService } from '../../src/modules/app/app.service';
-import { ROUTES } from '../../src/routes/routes';
 import { DefaultLanguages } from '../../src/constants/constants';
 import { MappedArticle, MappedArticleDrafts } from '../../src/modules/article/article.types';
 import { SchemaResponse } from '../../src/modules/schema/schema.types';
-import {
-  approveDraftRequest,
-  createArticleRequest,
-  createDraftRequest,
-  getArticleDraftsRequest,
-  getArticleRequest,
-  getSchemaRequest,
-  renovateDraftSchemaRequest,
-  updateDraftRequest,
-} from '../helpers/api-request';
+
+import { articleRequest } from '../helpers/request/article.request';
+import { schemaRequest } from '../helpers/request/schema.request';
+import { PrismaService } from '../../src/prisma/prisma.service';
+import { closeConnection, initTestModule } from '../helpers/hook';
 
 describe('User flow: draft creation', () => {
   let app: INestApplication;
+  let prismaService: PrismaService;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        ArticleModule,
-        CategoryModule,
-        SchemaModule,
-        ArticleVersionModule,
-        RouterModule.register(ROUTES),
-      ],
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
+  beforeAll(async () => {
+    ({ app, prismaService } = await initTestModule());
+  });
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
+  afterAll(async () => {
+    await closeConnection(app, prismaService);
   });
 
   describe('Draft creation', () => {
@@ -53,13 +30,13 @@ describe('User flow: draft creation', () => {
 
     it('Should create article with drafts', async () => {
       const articleDTO = {
-        name: 'article_ua_2',
+        name: 'drafts_test_article_ua_1',
         body: 'body_ua_1',
         header: 'header_ua_1',
         categoriesIds: [],
       };
 
-      context.initialArticle = await createArticleRequest(app, {
+      context.initialArticle = await articleRequest.createArticle(app, {
         languageCode: DefaultLanguages.UA,
         articleDTO,
       });
@@ -68,7 +45,7 @@ describe('User flow: draft creation', () => {
 
       const articleVersionCode = context.createdArticle.articleLanguage.version.code;
 
-      context.createdDraft1 = await createDraftRequest(app, {
+      context.createdDraft1 = await schemaRequest.createDraft(app, {
         languageCode: DefaultLanguages.UA,
         articleVersionCode,
         schemaDTO: {
@@ -77,7 +54,7 @@ describe('User flow: draft creation', () => {
         },
       });
 
-      context.createdDraft2 = await createDraftRequest(app, {
+      context.createdDraft2 = await schemaRequest.createDraft(app, {
         languageCode: DefaultLanguages.UA,
         articleVersionCode,
         schemaDTO: {
@@ -91,7 +68,7 @@ describe('User flow: draft creation', () => {
       const articleVersionCode = context.createdArticle.articleLanguage.version.code;
       const parentSchema = context.createdArticle.articleLanguage.version.schema;
 
-      context.createdDraft1 = await updateDraftRequest(
+      context.createdDraft1 = await schemaRequest.updateDraft(
         app,
         {
           code: context.createdDraft1.code,
@@ -116,7 +93,7 @@ describe('User flow: draft creation', () => {
       const article = context.createdArticle;
       const articleVersion = article.articleLanguage.version;
 
-      const errorResponse = await renovateDraftSchemaRequest(app, {
+      const errorResponse = await schemaRequest.renovateDraftSchema(app, {
         code: context.createdDraft2.code,
         languageCode: DefaultLanguages.UA,
         articleVersionCode: articleVersion.code,
@@ -135,7 +112,7 @@ describe('User flow: draft creation', () => {
       const articleVersion = article.articleLanguage.version;
       const articleSchema = articleVersion.schema;
 
-      await approveDraftRequest(
+      await schemaRequest.approveDraft(
         app,
         {
           code: context.createdDraft1.code,
@@ -151,7 +128,7 @@ describe('User flow: draft creation', () => {
         },
       );
 
-      const articleDrafts: MappedArticleDrafts = await getArticleDraftsRequest(
+      const articleDrafts: MappedArticleDrafts = await articleRequest.getArticleDrafts(
         app,
         {
           languageCode: DefaultLanguages.UA,
@@ -180,7 +157,7 @@ describe('User flow: draft creation', () => {
         },
       );
 
-      context.createdDraft1 = await getSchemaRequest(app, {
+      context.createdDraft1 = await schemaRequest.getSchema(app, {
         code: context.createdDraft1.code,
         languageCode: DefaultLanguages.UA,
         articleVersionCode: articleDrafts.articleVersions[1].code,
@@ -192,7 +169,7 @@ describe('User flow: draft creation', () => {
       const articleVersion = article.articleLanguage.version;
       const articleSchema = articleVersion.schema;
 
-      await getSchemaRequest(
+      await schemaRequest.getSchema(
         app,
         {
           code: context.createdDraft2.code,
@@ -217,7 +194,7 @@ describe('User flow: draft creation', () => {
       const article = context.createdArticle;
       const articleVersion = article.articleLanguage.version;
 
-      context.createdDraft2 = await renovateDraftSchemaRequest(
+      context.createdDraft2 = await schemaRequest.renovateDraftSchema(
         app,
         {
           code: context.createdDraft2.code,
@@ -234,7 +211,7 @@ describe('User flow: draft creation', () => {
         },
       );
 
-      context.createdArticle = await getArticleRequest(app, {
+      context.createdArticle = await articleRequest.getArticle(app, {
         languageCode: DefaultLanguages.UA,
         code: context.createdArticle.code,
       });
@@ -244,7 +221,7 @@ describe('User flow: draft creation', () => {
       const article = context.createdArticle;
       const articleVersion = article.articleLanguage.version;
 
-      await approveDraftRequest(
+      await schemaRequest.approveDraft(
         app,
         {
           code: context.createdDraft2.code,
@@ -265,7 +242,7 @@ describe('User flow: draft creation', () => {
       const article = context.createdArticle;
       const initialArticleSchema = context.initialArticle.articleLanguage.version.schema;
 
-      await getArticleDraftsRequest(
+      await articleRequest.getArticleDrafts(
         app,
         {
           languageCode: DefaultLanguages.UA,

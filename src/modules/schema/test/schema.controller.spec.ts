@@ -3,8 +3,8 @@ import { Language } from '@prisma/client';
 
 import { ArticleVersionRepository } from '../../../repositories/articleVersion.repository';
 import { SchemaRepository } from '../../../repositories/schema.repository';
-import { PrismaService } from '../../../services/prisma.service';
-import { PrismaMock } from '../../../services/prismaMock.service';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { PrismaMock } from '../../../prisma/prismaMock.service';
 import { SchemaController } from '../schema.controller';
 import { SchemaService } from '../schema.service';
 import {
