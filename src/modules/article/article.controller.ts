@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
-import { CreateArticleDto } from './article.dtos';
+import { CreateArticleDto, PatchArticleDto } from './article.dtos';
 import { ArticleService } from './article.service';
 
 @ApiTags('article')
@@ -15,10 +15,7 @@ export class ArticleController {
   }
 
   @Get('/:code')
-  getArticle(
-    @Param('code') code: string,
-    @Param('language') languageCode: string,
-  ) {
+  getArticle(@Param('code') code: string, @Param('language') languageCode: string) {
     return this.articleService.getArticle({
       code,
       languageCode,
@@ -26,10 +23,7 @@ export class ArticleController {
   }
 
   @Get('/:code/version')
-  getArticleWithVersions(
-    @Param('code') code: string,
-    @Param('language') languageCode: string,
-  ) {
+  getArticleWithVersions(@Param('code') code: string, @Param('language') languageCode: string) {
     return this.articleService.getArticleWithVersions({
       code,
       languageCode,
@@ -37,10 +31,7 @@ export class ArticleController {
   }
 
   @Get('/:code/draft')
-  getArticleDrafts(
-    @Param('code') code: string,
-    @Param('language') languageCode: string,
-  ) {
+  getArticleDrafts(@Param('code') code: string, @Param('language') languageCode: string) {
     return this.articleService.getArticleDrafts({
       code,
       languageCode,
@@ -48,10 +39,7 @@ export class ArticleController {
   }
 
   @Post()
-  createArticle(
-    @Param('language') languageCode: string,
-    @Body() payload: CreateArticleDto,
-  ) {
+  createArticle(@Param('language') languageCode: string, @Body() payload: CreateArticleDto) {
     return this.articleService.createArticle(payload, { languageCode });
   }
 
@@ -65,5 +53,19 @@ export class ArticleController {
       languageCode,
       code,
     });
+  }
+
+  @Patch('/:code')
+  patchArticle(
+    @Param('code') code: string,
+    @Param('language') languageCode: string,
+    @Body() payload: PatchArticleDto,
+  ) {
+    return this.articleService.patchArticle(payload, { languageCode, code });
+  }
+
+  @Delete('/:code')
+  deleteArticle(@Param('code') code: string) {
+    return this.articleService.deleteArticle({ code });
   }
 }

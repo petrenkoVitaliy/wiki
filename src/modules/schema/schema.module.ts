@@ -9,12 +9,6 @@ import { SchemaService } from './schema.service';
 
 @Module({
   controllers: [SchemaController],
-  providers: [
-    SchemaService,
-    PrismaService,
-
-    ArticleVersionRepository,
-    SchemaRepository,
-  ],
+  providers: [SchemaService, PrismaService, ArticleVersionRepository, SchemaRepository],
 })
 export class SchemaModule {}

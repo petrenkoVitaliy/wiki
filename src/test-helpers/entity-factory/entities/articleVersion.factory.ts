@@ -1,11 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  ArticleLanguage,
-  ArticleVersion,
-  Header,
-  Schema,
-  Body,
-} from '@prisma/client';
+import { ArticleLanguage, ArticleVersion, Header, Schema, Body } from '@prisma/client';
 
 @Injectable()
 export class ArticleVersionFactory {
@@ -15,11 +9,16 @@ export class ArticleVersionFactory {
     version?: number;
     schemaCode?: string;
     articleLanguageCode?: string;
+    actual?: boolean;
+    archived?: boolean;
+    enabled?: boolean;
   }): ArticleVersion {
     return {
       code: `article_version_code_${++this.entitySeq}`,
-      enabled: true,
+      enabled: options.enabled !== undefined ? options.enabled : true,
+      archived: options.archived !== undefined ? options.archived : false,
       version: options.version || 1,
+      actual: options.actual || null,
 
       schemaCode: options.schemaCode || '',
       articleLanguageCode: options.articleLanguageCode || '',
@@ -33,6 +32,9 @@ export class ArticleVersionFactory {
     schema?: Schema & { body?: Body; header?: Header };
     articleLanguage?: ArticleLanguage;
     version?: number;
+    actual?: boolean;
+    archived?: boolean;
+    enabled?: boolean;
   }): ArticleVersion & {
     schema?: Schema & { body?: Body; header?: Header };
     articleLanguage?: ArticleLanguage;
@@ -40,6 +42,9 @@ export class ArticleVersionFactory {
     const basicEntity = this.basic({
       schemaCode: options.schema?.code,
       articleLanguageCode: options.articleLanguage?.code,
+      actual: options.actual,
+      enabled: options.enabled,
+      archived: options.archived,
     });
 
     return {

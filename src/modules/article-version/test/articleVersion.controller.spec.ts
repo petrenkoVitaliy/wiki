@@ -26,19 +26,13 @@ describe('ArticleVersionController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [ArticleVersionController],
-      providers: [
-        ArticleVersionService,
-        PrismaService,
-        ArticleVersionRepository,
-      ],
+      providers: [ArticleVersionService, PrismaService, ArticleVersionRepository],
     })
       .overrideProvider(PrismaService)
       .useValue(PrismaMock)
       .compile();
 
-    module.articleVersionController = app.get<ArticleVersionController>(
-      ArticleVersionController,
-    );
+    module.articleVersionController = app.get<ArticleVersionController>(ArticleVersionController);
 
     entityFactory = await EntityFactory.initiate();
 
@@ -53,15 +47,12 @@ describe('ArticleVersionController', () => {
         schema,
       }) as ArticleVersionAggregation;
 
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
-      const articleVersionResponse =
-        await module.articleVersionController.getArticleVersion(
-          languages.UA.code,
-          articleVersion.code,
-        );
+      const articleVersionResponse = await module.articleVersionController.getArticleVersion(
+        languages.UA.code,
+        articleVersion.code,
+      );
 
       expect(articleVersionResponse).toEqual({
         code: articleVersion.code,
@@ -78,7 +69,7 @@ describe('ArticleVersionController', () => {
       });
     });
 
-    it('should handle error', async () => {
+    it('should handle not found error', async () => {
       const articleVersion = entityFactory.articleVersion.basic({});
 
       PrismaMock.articleVersion.findFirstOrThrow.mockRejectedValue(
@@ -86,10 +77,7 @@ describe('ArticleVersionController', () => {
       );
 
       expect(
-        module.articleVersionController.getArticleVersion(
-          languages.UA.code,
-          articleVersion.code,
-        ),
+        module.articleVersionController.getArticleVersion(languages.UA.code, articleVersion.code),
       ).rejects.toThrow("Article version isn't exist");
     });
   });

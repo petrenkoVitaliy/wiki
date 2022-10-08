@@ -1,17 +1,13 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { CreateArticleDto } from '../../src/modules/article/article.dtos';
-import {
-  MappedArticle,
-  MappedSchema,
-} from '../../src/modules/article/article.types';
+import { CreateArticleDto, PatchArticleDto } from '../../src/modules/article/article.dtos';
+import { MappedArticle, MappedSchema } from '../../src/modules/article/article.types';
 import { CreateSchemaDto } from '../../src/modules/schema/schema.dtos';
 import { SchemaResponse } from '../../src/modules/schema/schema.types';
-import { prettyPrint } from '../../src/utils/utils';
 
 export const getArticleRequest = async (
   app: INestApplication,
-  options: { languageCode: string; code: string },
+  options: { languageCode: string; code: string; responseStatus?: HttpStatus },
   testOptions?: {
     createdLanguages: string[];
     articleLanguageName: string;
@@ -19,9 +15,9 @@ export const getArticleRequest = async (
 ) => {
   const response = await request(app.getHttpServer())
     .get(`/${options.languageCode}/article/${options.code}`)
-    .expect(HttpStatus.OK)
+    .expect(options.responseStatus || HttpStatus.OK)
     .expect(function (res) {
-      if (testOptions) {
+      if (!options.responseStatus && testOptions) {
         expect(res.body).toMatchObject({
           code: options.code,
           type: 'common',
@@ -125,6 +121,70 @@ export const createArticleRequest = async (
   return response.body;
 };
 
+export const patchArticleRequest = async (
+  app: INestApplication,
+  options: {
+    code: string;
+    languageCode: string;
+    articleDTO: PatchArticleDto;
+    responseStatus?: HttpStatus;
+  },
+  testOptions?: {
+    name: string;
+    body: string;
+    header: string;
+  },
+) => {
+  const response = await request(app.getHttpServer())
+    .patch(`/${options.languageCode}/article/${options.code}`)
+    .send({ ...options.articleDTO })
+    .expect(options.responseStatus || HttpStatus.OK)
+    .expect(function (res) {
+      if (!options.responseStatus && testOptions) {
+        expect(res.body).toMatchObject({
+          type: 'common',
+          languages: [],
+          articleLanguage: {
+            name: testOptions.name,
+            version: {
+              version: 1,
+              schema: {
+                body: {
+                  content: testOptions.body,
+                },
+                header: {
+                  content: testOptions.header,
+                },
+              },
+            },
+          },
+        });
+      }
+    });
+
+  return response.body;
+};
+
+export const deleteArticleRequest = async (
+  app: INestApplication,
+  options: {
+    code: string;
+    languageCode: string;
+    responseStatus?: HttpStatus;
+  },
+) => {
+  const response = await request(app.getHttpServer())
+    .delete(`/${options.languageCode}/article/${options.code}`)
+    .expect(options.responseStatus || HttpStatus.OK)
+    .expect(function (res) {
+      if (!options.responseStatus) {
+        expect(res.body.code).toBeTruthy();
+      }
+    });
+
+  return response.body;
+};
+
 export const addArticleLanguageRequest = async (
   app: INestApplication,
   options: {
@@ -178,9 +238,7 @@ export const createDraftRequest = async (
   },
 ) => {
   const response = await request(app.getHttpServer())
-    .post(
-      `/${options.languageCode}/article-version/${options.articleVersionCode}/schema`,
-    )
+    .post(`/${options.languageCode}/article-version/${options.articleVersionCode}/schema`)
     .send({ ...options.schemaDTO })
     .expect(HttpStatus.CREATED)
     .expect(function (res) {
@@ -235,27 +293,25 @@ export const getArticleDraftsRequest = async (
           articleLanguage: {
             name: testOptions.article.articleLanguage.name,
           },
-          articleVersions: testOptions.articleVersions.map(
-            (articleVersion) => ({
-              version: articleVersion.version,
-              schema: {
-                body: {
-                  content: articleVersion.schemaDTO.body,
-                },
-                header: {
-                  content: articleVersion.schemaDTO.header,
-                },
+          articleVersions: testOptions.articleVersions.map((articleVersion) => ({
+            version: articleVersion.version,
+            schema: {
+              body: {
+                content: articleVersion.schemaDTO.body,
               },
-              drafts: articleVersion.drafts.map((draft) => ({
-                body: {
-                  content: draft.body?.content,
-                },
-                header: {
-                  content: draft.header?.content,
-                },
-              })),
-            }),
-          ),
+              header: {
+                content: articleVersion.schemaDTO.header,
+              },
+            },
+            drafts: articleVersion.drafts.map((draft) => ({
+              body: {
+                content: draft.body?.content,
+              },
+              header: {
+                content: draft.header?.content,
+              },
+            })),
+          })),
         });
       }
     });

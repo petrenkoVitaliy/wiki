@@ -10,10 +10,7 @@ import { AppController } from '../../src/modules/app/app.controller';
 import { AppService } from '../../src/modules/app/app.service';
 import { ROUTES } from '../../src/routes/routes';
 import { DefaultLanguages } from '../../src/constants/constants';
-import {
-  MappedArticle,
-  MappedArticleDrafts,
-} from '../../src/modules/article/article.types';
+import { MappedArticle, MappedArticleDrafts } from '../../src/modules/article/article.types';
 import { SchemaResponse } from '../../src/modules/schema/schema.types';
 import {
   approveDraftRequest,
@@ -69,8 +66,7 @@ describe('User flow: draft creation', () => {
 
       context.createdArticle = { ...context.initialArticle };
 
-      const articleVersionCode =
-        context.createdArticle.articleLanguage.version.code;
+      const articleVersionCode = context.createdArticle.articleLanguage.version.code;
 
       context.createdDraft1 = await createDraftRequest(app, {
         languageCode: DefaultLanguages.UA,
@@ -92,10 +88,8 @@ describe('User flow: draft creation', () => {
     });
 
     it('Should update draft 1', async () => {
-      const articleVersionCode =
-        context.createdArticle.articleLanguage.version.code;
-      const parentSchema =
-        context.createdArticle.articleLanguage.version.schema;
+      const articleVersionCode = context.createdArticle.articleLanguage.version.code;
+      const parentSchema = context.createdArticle.articleLanguage.version.schema;
 
       context.createdDraft1 = await updateDraftRequest(
         app,
@@ -269,8 +263,7 @@ describe('User flow: draft creation', () => {
 
     it('Should return article drafts', async () => {
       const article = context.createdArticle;
-      const initialArticleSchema =
-        context.initialArticle.articleLanguage.version.schema;
+      const initialArticleSchema = context.initialArticle.articleLanguage.version.schema;
 
       await getArticleDraftsRequest(
         app,

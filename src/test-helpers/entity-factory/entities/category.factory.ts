@@ -22,10 +22,7 @@ export class CategoryFactory {
     };
   }
 
-  extended(options: {
-    parentId?: number | null;
-    articles: Article[];
-  }): Category & {
+  extended(options: { parentId?: number | null; articles: Article[] }): Category & {
     articleCategories: {
       articleCode: string;
       categoryId: number;

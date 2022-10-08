@@ -8,18 +8,21 @@ import { convertNameToCode } from '../utils/utils';
 export class ArticleLanguageRepository {
   constructor(private prisma: PrismaService) {}
 
-  async findOne(options: { articleCode: string; languageCode: string }) {
+  async findOne(options: { articleCode: string; languageCode: string; enabled?: boolean }) {
     try {
       const result = await this.prisma.articleLanguage.findFirstOrThrow({
         where: {
-          enabled: true,
+          archived: false,
+          enabled: options.enabled,
+
           language: {
             code: options.languageCode,
           },
+
           article: {
             code: options.articleCode,
-            // enabled: true, // TODO
-            // archived: false,
+            archived: false,
+            enabled: options.enabled,
           },
         },
 
@@ -49,17 +52,11 @@ export class ArticleLanguageRepository {
 
       return result;
     } catch (ex) {
-      throw new HttpException(
-        "Article language isn't exist",
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException("Article language isn't exist", HttpStatus.NOT_FOUND);
     }
   }
 
-  async create(
-    payload: CreateArticleDto,
-    options: { articleCode: string; languageId: number },
-  ) {
+  async create(payload: CreateArticleDto, options: { articleCode: string; languageId: number }) {
     return this.prisma.articleLanguage.create({
       data: {
         name: payload.name,
@@ -95,27 +92,6 @@ export class ArticleLanguageRepository {
             },
           },
         },
-      },
-    });
-  }
-
-  async getAdditionalLanguages(options: {
-    articleCode: string;
-    languageCodeToExclude?: string;
-  }) {
-    return this.prisma.articleLanguage.findMany({
-      where: {
-        article: {
-          code: options.articleCode,
-        },
-        NOT: {
-          language: {
-            code: options.languageCodeToExclude,
-          },
-        },
-      },
-      include: {
-        language: true,
       },
     });
   }

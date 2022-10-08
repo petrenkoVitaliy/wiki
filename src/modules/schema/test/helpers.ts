@@ -1,5 +1,5 @@
 import { EntityFactoryModule } from '../../../test-helpers/entity-factory/entityFactory';
-import { ArticleVersionWithSiblings, SchemaAggregation } from '../schema.types';
+import { SchemaAggregation } from '../schema.types';
 
 export const getSchemaAggregation = (entityFactory: EntityFactoryModule) => {
   const parentSchema = entityFactory.schema.extended({});
@@ -13,9 +13,7 @@ export const getSchemaAggregation = (entityFactory: EntityFactoryModule) => {
   return { schema };
 };
 
-export const getSchemaAggregationWithoutVersion = (
-  entityFactory: EntityFactoryModule,
-) => {
+export const getSchemaAggregationWithoutVersion = (entityFactory: EntityFactoryModule) => {
   const parentSchema = entityFactory.schema.extended({});
 
   const schema = entityFactory.schema.extended({
@@ -25,28 +23,18 @@ export const getSchemaAggregationWithoutVersion = (
   return { schema };
 };
 
-export const getArticleVersionWithSiblings = (
-  entityFactory: EntityFactoryModule,
-) => {
+export const getArticleVersionWithSiblings = (entityFactory: EntityFactoryModule) => {
   const schema = entityFactory.schema.extended({});
-  const articleVersionChild = entityFactory.articleVersion.extended({
-    schema,
-    version: 2,
-  });
-  const articleLanguage = entityFactory.articleLanguage.extended({
-    articleVersion: [articleVersionChild],
-  });
 
   const articleVersion = entityFactory.articleVersion.extended({
-    articleLanguage,
-  }) as ArticleVersionWithSiblings;
+    schema,
+    actual: true,
+  });
 
   return { articleVersion };
 };
 
-export const getSingleArticleVersionWithSiblings = (
-  entityFactory: EntityFactoryModule,
-) => {
+export const getSingleArticleVersionWithSiblings = (entityFactory: EntityFactoryModule) => {
   const schema = entityFactory.schema.extended({});
   const baseArticleVersion = entityFactory.articleVersion.extended({ schema });
 
@@ -57,14 +45,12 @@ export const getSingleArticleVersionWithSiblings = (
   const articleVersion = {
     ...baseArticleVersion,
     articleLanguage: articleLanguage,
-  } as ArticleVersionWithSiblings;
+  };
 
   return { articleVersion };
 };
 
-export const getSchemaFixture = (
-  schema: Partial<SchemaAggregation> | null,
-) => ({
+export const getSchemaFixture = (schema: Partial<SchemaAggregation> | null) => ({
   header: {
     content: schema?.header?.content,
   },

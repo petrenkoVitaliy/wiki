@@ -92,11 +92,7 @@ export class SchemaRepository {
     });
   }
 
-  updateWithRelations(options: {
-    payload: CreateSchemaDto;
-    code: string;
-    parentCode?: string;
-  }) {
+  updateWithRelations(options: { payload: CreateSchemaDto; code: string; parentCode?: string }) {
     const { parentCode } = options;
 
     return this.prisma.schema.update({

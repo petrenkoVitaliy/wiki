@@ -5,14 +5,14 @@ import { Article, ArticleLanguage, ArticleType } from '@prisma/client';
 export class ArticleFactory {
   private entitySeq = 0;
 
-  basic(): Article {
+  basic(options?: { enabled?: boolean; archived?: boolean }): Article {
     const id = ++this.entitySeq;
 
     return {
       code: `article_code_${id}`,
 
-      enabled: true,
-      archived: false,
+      enabled: options?.enabled !== undefined ? options.enabled : true,
+      archived: options?.archived !== undefined ? options.archived : false,
       type: ArticleType.common,
 
       updatedAt: new Date(),
@@ -20,22 +20,18 @@ export class ArticleFactory {
     };
   }
 
-  extended(options: { articleLanguage: ArticleLanguage[] }): Article & {
+  extended(options: {
+    articleLanguage: ArticleLanguage[];
+    enabled?: boolean;
+    archived?: boolean;
+  }): Article & {
     articleLanguage: ArticleLanguage[];
   } {
-    const id = ++this.entitySeq;
+    const basicEntity = this.basic(options);
 
     return {
-      code: `article_code_${id}`,
-
-      enabled: true,
-      archived: false,
-      type: ArticleType.common,
-
+      ...basicEntity,
       articleLanguage: options.articleLanguage,
-
-      updatedAt: new Date(),
-      createdAt: new Date(),
     };
   }
 }

@@ -61,9 +61,7 @@ describe('CategoryController', () => {
 
       PrismaMock.category.findMany.mockResolvedValue([category1, category2]);
 
-      const categoriesTree = await module.categoryController.getCategoriesMap(
-        languages.UA.code,
-      );
+      const categoriesTree = await module.categoryController.getCategoriesMap(languages.UA.code);
 
       expect(categoriesTree).toEqual([
         {

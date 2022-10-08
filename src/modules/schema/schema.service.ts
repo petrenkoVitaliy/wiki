@@ -3,11 +3,11 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { convertNullable } from '../../utils/utils';
 import { SchemaRepository } from '../../repositories/schema.repository';
 import { ArticleVersionRepository } from '../../repositories/articleVersion.repository';
+import { PrismaService } from '../../services/prisma.service';
 import { CreateSchemaDto } from './schema.dtos';
 import {
   ArticleVersionAggregation,
   ArticleVersionAggregationExtended,
-  ArticleVersionWithSiblings,
   NewArticleVersionResponse,
   SchemaAggregation,
   SchemaResponse,
@@ -18,13 +18,10 @@ export class SchemaService {
   constructor(
     private articleVersionRepository: ArticleVersionRepository,
     private schemaRepository: SchemaRepository,
+    private prisma: PrismaService,
   ) {}
 
-  async getSchema(options: {
-    code: string;
-    articleVersionCode: string;
-    languageCode: string;
-  }) {
+  async getSchema(options: { code: string; articleVersionCode: string; languageCode: string }) {
     const schema = await this.schemaRepository.findOneWithParent(options);
 
     const renovationCheckResult = await this.renovationCheck(
@@ -89,34 +86,37 @@ export class SchemaService {
     payload: CreateSchemaDto,
     options: { articleVersionCode: string; languageCode: string },
   ) {
-    const articleVersion =
-      await this.articleVersionRepository.findOneWithSiblings({
+    const [currentArticleVersion, actualArticleVersion] = await Promise.all([
+      this.articleVersionRepository.findOne({
         code: options.articleVersionCode,
         languageCode: options.languageCode,
-      });
+        enabled: true,
+      }),
+
+      this.articleVersionRepository.findActualSibling({
+        code: options.articleVersionCode,
+        languageCode: options.languageCode,
+      }),
+    ]);
 
     const schema = await this.schemaRepository.create({
       payload: payload,
-      parentCode: articleVersion.schemaCode,
+      parentCode: currentArticleVersion.schemaCode,
     });
 
-    const actualVersion = articleVersion.articleLanguage.articleVersion[0];
-    const isLastVersion = articleVersion.code === actualVersion?.code;
+    const isLastVersion = currentArticleVersion.code === actualArticleVersion.code;
 
     return this.mapToSchemaResponse(schema, {
       shouldBeRenovated: !isLastVersion,
     });
   }
 
-  async approveDraft(options: {
-    articleVersionCode: string;
-    languageCode: string;
-    code: string;
-  }) {
+  async approveDraft(options: { articleVersionCode: string; languageCode: string; code: string }) {
     const [parentArticleVersion, schemaToApprove] = await Promise.all([
       this.articleVersionRepository.findOne({
         code: options.articleVersionCode,
         languageCode: options.languageCode,
+        enabled: true,
       }),
       this.schemaRepository.findOne({
         code: options.code,
@@ -128,21 +128,23 @@ export class SchemaService {
       schemaToApprove?.parentSchema?.code === parentArticleVersion.schema.code;
 
     if (!isCorrectDraftRelation || isPrimarySchema) {
-      throw new HttpException(
-        'Invalid schema to approve',
-        HttpStatus.FORBIDDEN,
-      );
+      throw new HttpException('Invalid schema to approve', HttpStatus.FORBIDDEN);
     }
 
-    await this.schemaRepository.update({
-      code: options.code,
-      parentCode: null,
-    });
-
-    const newArticleVersion = await this.articleVersionRepository.create({
-      articleLanguageCode: parentArticleVersion.articleLanguageCode,
-      schemaCode: schemaToApprove.code,
-    });
+    const [, , newArticleVersion] = await this.prisma.$transaction([
+      this.schemaRepository.update({
+        code: options.code,
+        parentCode: null,
+      }),
+      this.articleVersionRepository.update({
+        code: parentArticleVersion.code,
+        actual: null,
+      }),
+      this.articleVersionRepository.create({
+        articleLanguageCode: parentArticleVersion.articleLanguageCode,
+        schemaCode: schemaToApprove.code,
+      }),
+    ]);
 
     return this.mapToNewArticleVersionResponse(newArticleVersion);
   }
@@ -159,20 +161,16 @@ export class SchemaService {
       return { isRenovateNeeded: false };
     }
 
-    const articleVersionWithSiblings: ArticleVersionWithSiblings =
-      await this.articleVersionRepository.findOneWithSiblings({
-        code: articleVersionCode,
-        languageCode,
-      });
+    const siblingArticleVersion = await this.articleVersionRepository.findActualSibling({
+      code: articleVersionCode,
+      languageCode,
+    });
 
-    const actualVersion =
-      articleVersionWithSiblings.articleLanguage.articleVersion[0];
-
-    const actualSchema = actualVersion.schema;
+    const actualSchema = siblingArticleVersion.schema;
 
     return {
       isRenovateNeeded: actualSchema.code !== schema.parentCode,
-      actualVersion,
+      actualVersion: siblingArticleVersion,
     };
   }
 

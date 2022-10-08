@@ -100,3 +100,9 @@ export type MappedVersion = {
   code: string;
   version: number;
 };
+
+export type UpdateArticleOptions = {
+  enabled?: boolean;
+  archived?: boolean;
+  type?: ArticleType;
+};

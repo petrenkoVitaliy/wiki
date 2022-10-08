@@ -1,10 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  Article,
-  ArticleLanguage,
-  ArticleVersion,
-  Language,
-} from '@prisma/client';
+import { Article, ArticleLanguage, ArticleVersion, Language } from '@prisma/client';
 
 @Injectable()
 export class ArticleLanguageFactory {
@@ -13,6 +8,8 @@ export class ArticleLanguageFactory {
   basic(options: {
     languageId?: number;
     articleCode?: string;
+    enabled?: boolean;
+    archived?: boolean;
   }): ArticleLanguage {
     const id = ++this.entitySeq;
 
@@ -21,7 +18,8 @@ export class ArticleLanguageFactory {
       name: `article language ${id}`,
       nameCode: `article_language_${id}`,
 
-      enabled: true,
+      enabled: options.enabled !== undefined ? options.enabled : true,
+      archived: options.archived !== undefined ? options.archived : false,
 
       languageId: options.languageId || 0,
       articleCode: options.articleCode || '',
@@ -36,6 +34,8 @@ export class ArticleLanguageFactory {
     article?: Article;
     languageId?: number;
     articleCode?: string;
+    enabled?: boolean;
+    archived?: boolean;
     articleVersion: ArticleVersion[];
   }): ArticleLanguage & {
     language?: Language;
@@ -45,6 +45,8 @@ export class ArticleLanguageFactory {
     const basicEntity = this.basic({
       articleCode: options?.article?.code || options.articleCode,
       languageId: options.language?.id || options.languageId,
+      enabled: options.enabled,
+      archived: options.archived,
     });
 
     return {

@@ -14,9 +14,7 @@ export class CategoryService {
     return this.mapToCategoriesTree(categories);
   }
 
-  private mapToCategoriesTree(
-    categories: CategoryAggregation[],
-  ): CategoriesTree[] {
+  private mapToCategoriesTree(categories: CategoryAggregation[]): CategoriesTree[] {
     const categoryTreeNodes: CategoriesTree[] = [];
 
     const categoriesMap = categories.reduce(

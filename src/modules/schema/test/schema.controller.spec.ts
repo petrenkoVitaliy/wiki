@@ -34,13 +34,7 @@ describe('SchemaController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [SchemaController],
-      providers: [
-        SchemaService,
-        PrismaService,
-
-        ArticleVersionRepository,
-        SchemaRepository,
-      ],
+      providers: [SchemaService, PrismaService, ArticleVersionRepository, SchemaRepository],
     })
       .overrideProvider(PrismaService)
       .useValue(PrismaMock)
@@ -61,9 +55,7 @@ describe('SchemaController', () => {
 
       PrismaMock.schema.findFirstOrThrow.mockResolvedValue(schema);
 
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
       const schemaAggregation = await module.schemaController.getSchema(
         schema.code,
@@ -86,9 +78,7 @@ describe('SchemaController', () => {
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
       PrismaMock.schema.findFirstOrThrow.mockResolvedValue(schema);
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
       const schemaAggregation = await module.schemaController.getSchema(
         schema.code,
@@ -111,11 +101,13 @@ describe('SchemaController', () => {
     it('should successfully create draft schema & renovation:true', async () => {
       const { schema } = getSchemaAggregation(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
+      const { articleVersion: articleVersionSibling } =
+        getArticleVersionWithSiblings(entityFactory);
 
       PrismaMock.schema.create.mockResolvedValue(schema);
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow
+        .mockResolvedValueOnce(articleVersion)
+        .mockResolvedValueOnce(articleVersionSibling);
 
       const schemaAggregation = await module.schemaController.createDraft(
         articleVersion.code,
@@ -135,13 +127,10 @@ describe('SchemaController', () => {
 
     it('should successfully create draft schema & renovation:false', async () => {
       const { schema } = getSchemaAggregation(entityFactory);
-      const { articleVersion } =
-        getSingleArticleVersionWithSiblings(entityFactory);
+      const { articleVersion } = getSingleArticleVersionWithSiblings(entityFactory);
 
       PrismaMock.schema.create.mockResolvedValue(schema);
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
       const schemaAggregation = await module.schemaController.createDraft(
         articleVersion.code,
@@ -166,9 +155,7 @@ describe('SchemaController', () => {
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
       PrismaMock.schema.update.mockResolvedValue(schema);
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
       const schemaAggregation = await module.schemaController.updateDraft(
         schema.code,
@@ -190,9 +177,7 @@ describe('SchemaController', () => {
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
       PrismaMock.schema.update.mockResolvedValue(schema);
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
       const schemaAggregation = await module.schemaController.updateDraft(
         schema.code,
@@ -219,9 +204,7 @@ describe('SchemaController', () => {
 
       PrismaMock.schema.update.mockResolvedValue(schema);
       PrismaMock.schema.findFirstOrThrow.mockResolvedValue(schema);
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
       expect(
         module.schemaController.renovateDraftSchema(
@@ -239,17 +222,14 @@ describe('SchemaController', () => {
 
       PrismaMock.schema.update.mockResolvedValue(schema);
       PrismaMock.schema.findFirstOrThrow.mockResolvedValue(schema);
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
-      const schemaAggregation =
-        await module.schemaController.renovateDraftSchema(
-          schema.code,
-          languages.UA.code,
-          articleVersion.code,
-          schemaDTOMocks.validSchemaMock,
-        );
+      const schemaAggregation = await module.schemaController.renovateDraftSchema(
+        schema.code,
+        languages.UA.code,
+        articleVersion.code,
+        schemaDTOMocks.validSchemaMock,
+      );
 
       expect(schemaAggregation).toEqual({
         ...getSchemaFixture(schema),
@@ -273,9 +253,7 @@ describe('SchemaController', () => {
         schema: schema2,
       });
 
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion1,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion1);
       PrismaMock.schema.findUniqueOrThrow.mockResolvedValue(schemaToApprove);
 
       expect(
@@ -294,9 +272,7 @@ describe('SchemaController', () => {
         schema: schema1,
       });
 
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion1,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion1);
       PrismaMock.schema.findUniqueOrThrow.mockResolvedValue(schemaToApprove);
 
       expect(
@@ -320,11 +296,10 @@ describe('SchemaController', () => {
         schema: schemaToApprove,
       });
 
-      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(
-        articleVersion1,
-      );
+      PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion1);
       PrismaMock.schema.findUniqueOrThrow.mockResolvedValue(schemaToApprove);
-      PrismaMock.articleVersion.create.mockResolvedValue(articleVersion2);
+
+      PrismaMock.$transaction.mockResolvedValue([undefined, undefined, articleVersion2]);
 
       const createdArticleVersion = await module.schemaController.approveDraft(
         schemaToApprove.code,

@@ -10,15 +10,23 @@ import {
 export const getArticleAggregation = (
   entityFactory: EntityFactoryModule,
   language: Language,
+  options?: {
+    enabled?: boolean;
+    archived?: boolean;
+  },
 ) => {
   const schema = entityFactory.schema.extended({});
-  const articleVersion = entityFactory.articleVersion.extended({ schema });
+  const articleVersion = entityFactory.articleVersion.extended({
+    schema,
+    actual: true,
+  });
   const articleLanguage = entityFactory.articleLanguage.extended({
     language,
     articleVersion: [articleVersion],
   }) as LanguageAggregation;
 
   const article = entityFactory.article.extended({
+    ...options,
     articleLanguage: [articleLanguage],
   }) as ArticleAggregation;
 
@@ -32,6 +40,16 @@ export const getArticleAggregation = (
 
 export const getArticleLanguageWithDraftsAggregation = (
   entityFactory: EntityFactoryModule,
+  options?: {
+    articleLanguage?: {
+      enabled?: boolean;
+      archived?: boolean;
+    };
+    article?: {
+      enabled?: boolean;
+      archived?: boolean;
+    };
+  },
 ) => {
   const schema1 = entityFactory.schema.extended({});
   const schema2 = entityFactory.schema.extended({});
@@ -49,9 +67,10 @@ export const getArticleLanguageWithDraftsAggregation = (
     version: 2,
   });
 
-  const article = entityFactory.article.basic();
+  const article = entityFactory.article.basic({ ...options?.article });
 
   const articleLanguage = entityFactory.articleLanguage.extended({
+    ...options?.articleLanguage,
     article,
     articleVersion: [articleVersion1, articleVersion2],
   }) as ArticleLanguageWithDraftsAggregation;

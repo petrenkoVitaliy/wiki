@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsNumber, IsArray } from 'class-validator';
+import { ArticleType } from '@prisma/client';
+import { IsString, IsNotEmpty, IsNumber, IsArray, IsBoolean, IsEnum } from 'class-validator';
 
 export class CreateArticleDto {
   @ApiProperty()
@@ -22,4 +23,14 @@ export class CreateArticleDto {
   @IsArray()
   @IsNumber({}, { each: true })
   categoriesIds: number[];
+}
+
+export class PatchArticleDto {
+  @ApiProperty()
+  @IsBoolean()
+  enabled?: boolean;
+
+  @ApiProperty()
+  @IsEnum(ArticleType)
+  type?: ArticleType;
 }

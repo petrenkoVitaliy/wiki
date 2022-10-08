@@ -4,16 +4,19 @@ import { ArticleType, Prisma } from '@prisma/client';
 import { convertNameToCode } from '../utils/utils';
 import { CreateArticleDto } from '../modules/article/article.dtos';
 import { PrismaService } from '../services/prisma.service';
+import { UpdateArticleOptions } from '../modules/article/article.types';
 
 @Injectable()
 export class ArticleRepository {
   constructor(private prisma: PrismaService) {}
 
-  async findOne(options: { code: string }) {
+  async findOne(options: { code: string; enabled?: boolean }) {
     try {
-      const result = await this.prisma.article.findUniqueOrThrow({
+      const result = await this.prisma.article.findFirstOrThrow({
         where: {
           code: options.code,
+          archived: false,
+          enabled: options.enabled,
         },
         include: {
           articleLanguage: {
@@ -30,11 +33,18 @@ export class ArticleRepository {
     }
   }
 
-  async findOneWithVersions(options: { languageCode: string; code: string }) {
+  async findOneWithVersions(options: {
+    languageCode: string;
+    code: string;
+    actualVersion?: boolean;
+    enabled?: boolean;
+  }) {
     try {
       const result = await this.prisma.article.findFirstOrThrow({
         where: {
           code: options.code,
+          archived: false,
+          enabled: options.enabled,
           articleLanguage: {
             some: {
               language: {
@@ -48,6 +58,15 @@ export class ArticleRepository {
             include: {
               language: true,
               articleVersion: {
+                ...(options.actualVersion
+                  ? { where: { actual: true } }
+                  : {
+                      orderBy: {
+                        version: Prisma.SortOrder.desc,
+                      },
+                      take: 1,
+                    }),
+
                 include: {
                   schema: {
                     include: {
@@ -56,11 +75,6 @@ export class ArticleRepository {
                     },
                   },
                 },
-
-                orderBy: {
-                  version: Prisma.SortOrder.desc,
-                },
-                take: 1,
               },
             },
           },
@@ -76,6 +90,9 @@ export class ArticleRepository {
   findMany(options: { languageCode: string }) {
     return this.prisma.article.findMany({
       where: {
+        archived: false,
+        enabled: true,
+
         articleLanguage: {
           some: {
             language: {
@@ -105,7 +122,6 @@ export class ArticleRepository {
     try {
       const result = await this.prisma.article.create({
         data: {
-          enabled: false,
           type: ArticleType.common,
 
           ...(payload.categoriesIds.length
@@ -159,6 +175,9 @@ export class ArticleRepository {
             include: {
               language: true,
               articleVersion: {
+                where: {
+                  actual: true,
+                },
                 include: {
                   schema: {
                     include: {
@@ -167,11 +186,6 @@ export class ArticleRepository {
                     },
                   },
                 },
-
-                orderBy: {
-                  version: Prisma.SortOrder.desc,
-                },
-                take: 1,
               },
             },
           },
@@ -182,13 +196,55 @@ export class ArticleRepository {
     } catch (ex) {
       if (ex instanceof Prisma.PrismaClientKnownRequestError) {
         if (ex.code === 'P2002') {
-          throw new HttpException(
-            'Article name must be unique',
-            HttpStatus.CONFLICT,
-          );
+          throw new HttpException('Article name must be unique', HttpStatus.CONFLICT);
         }
       }
       throw ex;
+    }
+  }
+
+  async update(payload: UpdateArticleOptions, options: { code: string; actualVersion?: boolean }) {
+    try {
+      const result = await this.prisma.article.update({
+        where: {
+          code: options.code,
+        },
+        data: {
+          enabled: payload.enabled,
+          archived: payload.archived,
+          type: payload.type,
+        },
+        include: {
+          articleLanguage: {
+            include: {
+              language: true,
+              articleVersion: {
+                ...(options.actualVersion
+                  ? { where: { actual: true } }
+                  : {
+                      orderBy: {
+                        version: Prisma.SortOrder.desc,
+                      },
+                      take: 1,
+                    }),
+
+                include: {
+                  schema: {
+                    include: {
+                      body: true,
+                      header: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return result;
+    } catch (ex) {
+      throw new HttpException("Article isn't exist", HttpStatus.NOT_FOUND);
     }
   }
 }

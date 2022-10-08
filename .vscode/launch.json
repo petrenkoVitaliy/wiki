@@ -2,13 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
-      "request": "launch",
-      "name": "Launch Program",
+      "address": "127.0.0.1",
+      "name": "Attach to port",
+      "port": 9229,
+      "request": "attach",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/src/modules/category/category.service.ts",
-      "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+      "type": "node"
     }
   ]
 }

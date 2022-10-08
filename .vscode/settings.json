@@ -4,5 +4,5 @@
   "search.exclude": {
     "**/dist": true
   },
-  "typescript.preferences.importModuleSpecifier": "relative"
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
