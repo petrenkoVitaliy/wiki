@@ -21,6 +21,7 @@ import {
 } from '../../../test-helpers/entity-factory/entityFactory';
 import { DefaultLanguages } from '../../../constants/constants';
 import { schemaDTOMocks } from './mock/schema.mock';
+import { ErrorGenerator } from '../../../utils/error.generator';
 
 describe('SchemaController', () => {
   const module = {} as {
@@ -49,7 +50,7 @@ describe('SchemaController', () => {
   });
 
   describe('method: getSchema', () => {
-    it('should successfully return schema aggregation & renovation:false', async () => {
+    it('return schema [renovation:false]', async () => {
       const { schema } = getSchemaAggregation(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
@@ -73,7 +74,7 @@ describe('SchemaController', () => {
       });
     });
 
-    it('should successfully return schema aggregation & renovation:true', async () => {
+    it('return schema [renovation:true]', async () => {
       const { schema } = getSchemaAggregationWithoutVersion(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
@@ -97,8 +98,8 @@ describe('SchemaController', () => {
     });
   });
 
-  describe('method: createDraft', () => {
-    it('should successfully create draft schema & renovation:true', async () => {
+  describe('method: createDraftSchema', () => {
+    it('create draft schema [renovation:true]', async () => {
       const { schema } = getSchemaAggregation(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
       const { articleVersion: articleVersionSibling } =
@@ -109,7 +110,7 @@ describe('SchemaController', () => {
         .mockResolvedValueOnce(articleVersion)
         .mockResolvedValueOnce(articleVersionSibling);
 
-      const schemaAggregation = await module.schemaController.createDraft(
+      const schemaAggregation = await module.schemaController.createDraftSchema(
         articleVersion.code,
         languages.UA.code,
         schemaDTOMocks.validSchemaMock,
@@ -125,14 +126,14 @@ describe('SchemaController', () => {
       });
     });
 
-    it('should successfully create draft schema & renovation:false', async () => {
+    it('create draft schema [renovation:false]', async () => {
       const { schema } = getSchemaAggregation(entityFactory);
       const { articleVersion } = getSingleArticleVersionWithSiblings(entityFactory);
 
       PrismaMock.schema.create.mockResolvedValue(schema);
       PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
-      const schemaAggregation = await module.schemaController.createDraft(
+      const schemaAggregation = await module.schemaController.createDraftSchema(
         articleVersion.code,
         languages.UA.code,
         schemaDTOMocks.validSchemaMock,
@@ -149,15 +150,15 @@ describe('SchemaController', () => {
     });
   });
 
-  describe('method: updateDraft', () => {
-    it('should successfully update draft schema & renovation:false', async () => {
+  describe('method: updateDraftSchema', () => {
+    it('update draft schema [renovation:false]', async () => {
       const { schema } = getSchemaAggregation(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
       PrismaMock.schema.update.mockResolvedValue(schema);
       PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
-      const schemaAggregation = await module.schemaController.updateDraft(
+      const schemaAggregation = await module.schemaController.updateDraftSchema(
         schema.code,
         languages.UA.code,
         articleVersion.code,
@@ -172,14 +173,14 @@ describe('SchemaController', () => {
       });
     });
 
-    it('should successfully update draft schema & renovation:true', async () => {
+    it('update draft schema [renovation:true]', async () => {
       const { schema } = getSchemaAggregationWithoutVersion(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
       PrismaMock.schema.update.mockResolvedValue(schema);
       PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
-      const schemaAggregation = await module.schemaController.updateDraft(
+      const schemaAggregation = await module.schemaController.updateDraftSchema(
         schema.code,
         languages.UA.code,
         articleVersion.code,
@@ -198,7 +199,7 @@ describe('SchemaController', () => {
   });
 
   describe('method: renovateDraftSchema', () => {
-    it('should not renovate actual-version schema', async () => {
+    it('handle already actual schema error', async () => {
       const { schema } = getSchemaAggregation(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
@@ -213,10 +214,10 @@ describe('SchemaController', () => {
           articleVersion.code,
           schemaDTOMocks.validSchemaMock,
         ),
-      ).rejects.toThrow('Schema is already actual');
+      ).rejects.toThrow(ErrorGenerator.alreadyActualSchema());
     });
 
-    it('should successfully renovate draft schema', async () => {
+    it('renovate draft schema', async () => {
       const { schema } = getSchemaAggregationWithoutVersion(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
@@ -243,7 +244,7 @@ describe('SchemaController', () => {
   });
 
   describe('method: approveDraft', () => {
-    it('should not approve invalid draft schema', async () => {
+    it('handle already approved schema error [invalid schema]', async () => {
       const schema1 = entityFactory.schema.extended({});
       const schema2 = entityFactory.schema.extended({});
       const schemaToApprove = entityFactory.schema.extended({
@@ -262,10 +263,10 @@ describe('SchemaController', () => {
           languages.UA.code,
           articleVersion1.code,
         ),
-      ).rejects.toThrow('Invalid schema to approve');
+      ).rejects.toThrow(ErrorGenerator.alreadyApprovedSchema());
     });
 
-    it('should not approve primary draft schema', async () => {
+    it('handle already approved schema error [primary schema', async () => {
       const schema1 = entityFactory.schema.extended({});
       const schemaToApprove = entityFactory.schema.extended({});
       const articleVersion1 = entityFactory.articleVersion.extended({
@@ -281,10 +282,10 @@ describe('SchemaController', () => {
           languages.UA.code,
           articleVersion1.code,
         ),
-      ).rejects.toThrow('Invalid schema to approve');
+      ).rejects.toThrow(ErrorGenerator.alreadyApprovedSchema());
     });
 
-    it('should successfully approve draft schema', async () => {
+    it('approve draft schema', async () => {
       const schema1 = entityFactory.schema.extended({});
       const schemaToApprove = entityFactory.schema.extended({
         parentSchema: schema1,

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { convertNullable, pick } from '../../utils/utils';
 import { ArticleVersionRepository } from '../../repositories/articleVersion.repository';
-import { ArticleVersionAggregation, MappedArticleVersion } from './articleVersion.types';
+import { ArticleVersionAggregation, ArticleVersionResponse } from './articleVersion.types';
 import { PatchArticleVersionDto } from './articleVersion.dtos';
 
 @Injectable()
@@ -12,7 +12,7 @@ export class ArticleVersionService {
   async getArticleVersion(options: {
     code: string;
     languageCode: string;
-  }): Promise<MappedArticleVersion> {
+  }): Promise<ArticleVersionResponse> {
     const articleVersion = await this.articleVersionRepository.findOne({
       ...options,
       enabled: true,
@@ -22,23 +22,20 @@ export class ArticleVersionService {
   }
 
   async patchArticleVersion(options: { code: string; payload: PatchArticleVersionDto }) {
-    const articleVersion = await this.articleVersionRepository.update(
-      {
-        code: options.code,
-        isExtended: true,
-      },
-      options.payload,
-    );
+    const articleVersion = await this.articleVersionRepository.update(options.payload, {
+      code: options.code,
+      isExtended: true,
+    });
 
     return this.mapToArticleVersionResponse(articleVersion);
   }
 
   async deleteArticleVersion(options: { code: string }) {
     const articleVersion = await this.articleVersionRepository.update(
+      { archived: true },
       {
         code: options.code,
       },
-      { archived: true },
     );
 
     return {
@@ -48,7 +45,7 @@ export class ArticleVersionService {
 
   private mapToArticleVersionResponse(
     articleVersion: ArticleVersionAggregation,
-  ): MappedArticleVersion {
+  ): ArticleVersionResponse {
     return {
       ...pick(articleVersion, ['code', 'version']),
 

@@ -57,7 +57,7 @@ export type MappedSchema = {
   };
 };
 
-export type MappedArticle = {
+export type ArticleResponse = {
   languages: string[] | undefined;
   articleLanguage: {
     version: {
@@ -72,7 +72,7 @@ export type MappedArticle = {
   type: ArticleType;
 };
 
-export type MappedArticleShort = {
+export type ArticleShortResponse = {
   articleLanguage: {
     name: string;
   };
@@ -80,7 +80,7 @@ export type MappedArticleShort = {
   type: ArticleType;
 };
 
-export type MappedArticleDrafts = {
+export type ArticleDraftsResponse = {
   code: string;
 
   articleLanguage: {
@@ -97,13 +97,7 @@ export type MappedArticleDrafts = {
   }[];
 };
 
-export type MappedVersion = {
+export type ArticleVersionShortResponse = {
   code: string;
   version: number;
-};
-
-export type UpdateArticleOptions = {
-  enabled?: boolean;
-  archived?: boolean;
-  type?: ArticleType;
 };

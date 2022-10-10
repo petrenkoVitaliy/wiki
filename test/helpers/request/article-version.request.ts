@@ -1,5 +1,6 @@
 import * as request from 'supertest';
 import { HttpStatus, INestApplication } from '@nestjs/common';
+
 import { PatchArticleVersionDto } from '../../../src/modules/article-version/articleVersion.dtos';
 
 const getArticleVersion = async (

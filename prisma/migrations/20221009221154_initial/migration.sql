@@ -11,57 +11,56 @@ CREATE TABLE "Language" (
 
 -- CreateTable
 CREATE TABLE "Article" (
-    "id" SERIAL NOT NULL,
+    "code" TEXT NOT NULL,
     "enabled" BOOLEAN NOT NULL DEFAULT true,
     "archived" BOOLEAN NOT NULL DEFAULT false,
     "type" "ArticleType" NOT NULL DEFAULT 'common',
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Article_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Article_pkey" PRIMARY KEY ("code")
 );
 
 -- CreateTable
 CREATE TABLE "ArticleLanguage" (
-    "id" SERIAL NOT NULL,
     "code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "nameCode" TEXT NOT NULL,
     "enabled" BOOLEAN NOT NULL DEFAULT true,
+    "archived" BOOLEAN NOT NULL DEFAULT false,
     "languageId" INTEGER NOT NULL,
-    "articleId" INTEGER NOT NULL,
+    "articleCode" TEXT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ArticleLanguage_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ArticleLanguage_pkey" PRIMARY KEY ("code")
 );
 
 -- CreateTable
 CREATE TABLE "ArticleVersion" (
-    "id" SERIAL NOT NULL,
+    "code" TEXT NOT NULL,
     "version" INTEGER NOT NULL DEFAULT 0,
     "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "code" TEXT NOT NULL,
-    "articleLanguageId" INTEGER NOT NULL,
-    "schemaId" INTEGER NOT NULL,
+    "archived" BOOLEAN NOT NULL DEFAULT false,
+    "actual" BOOLEAN DEFAULT true,
+    "articleLanguageCode" TEXT NOT NULL,
+    "schemaCode" TEXT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "ArticleVersion_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ArticleVersion_pkey" PRIMARY KEY ("code")
 );
 
 -- CreateTable
 CREATE TABLE "Schema" (
-    "id" SERIAL NOT NULL,
-    "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "archived" BOOLEAN NOT NULL DEFAULT false,
-    "parentId" INTEGER,
+    "code" TEXT NOT NULL,
+    "parentCode" TEXT,
     "bodyId" INTEGER,
     "headerId" INTEGER,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Schema_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Schema_pkey" PRIMARY KEY ("code")
 );
 
 -- CreateTable
@@ -100,10 +99,10 @@ CREATE TABLE "Category" (
 
 -- CreateTable
 CREATE TABLE "ArticleCategory" (
-    "articleId" INTEGER NOT NULL,
+    "articleCode" TEXT NOT NULL,
     "categoryId" INTEGER NOT NULL,
 
-    CONSTRAINT "ArticleCategory_pkey" PRIMARY KEY ("articleId","categoryId")
+    CONSTRAINT "ArticleCategory_pkey" PRIMARY KEY ("articleCode","categoryId")
 );
 
 -- CreateIndex
@@ -113,25 +112,31 @@ CREATE UNIQUE INDEX "ArticleLanguage_name_key" ON "ArticleLanguage"("name");
 CREATE UNIQUE INDEX "ArticleLanguage_nameCode_key" ON "ArticleLanguage"("nameCode");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ArticleLanguage_languageId_articleId_key" ON "ArticleLanguage"("languageId", "articleId");
+CREATE UNIQUE INDEX "ArticleLanguage_languageId_articleCode_key" ON "ArticleLanguage"("languageId", "articleCode");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ArticleVersion_schemaId_key" ON "ArticleVersion"("schemaId");
+CREATE UNIQUE INDEX "ArticleVersion_schemaCode_key" ON "ArticleVersion"("schemaCode");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ArticleVersion_version_articleLanguageId_key" ON "ArticleVersion"("version", "articleLanguageId");
+CREATE UNIQUE INDEX "ArticleVersion_version_articleLanguageCode_key" ON "ArticleVersion"("version", "articleLanguageCode");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ArticleVersion_actual_articleLanguageCode_key" ON "ArticleVersion"("actual", "articleLanguageCode");
 
 -- AddForeignKey
 ALTER TABLE "ArticleLanguage" ADD CONSTRAINT "ArticleLanguage_languageId_fkey" FOREIGN KEY ("languageId") REFERENCES "Language"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ArticleLanguage" ADD CONSTRAINT "ArticleLanguage_articleId_fkey" FOREIGN KEY ("articleId") REFERENCES "Article"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ArticleLanguage" ADD CONSTRAINT "ArticleLanguage_articleCode_fkey" FOREIGN KEY ("articleCode") REFERENCES "Article"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ArticleVersion" ADD CONSTRAINT "ArticleVersion_articleLanguageId_fkey" FOREIGN KEY ("articleLanguageId") REFERENCES "ArticleLanguage"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ArticleVersion" ADD CONSTRAINT "ArticleVersion_articleLanguageCode_fkey" FOREIGN KEY ("articleLanguageCode") REFERENCES "ArticleLanguage"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ArticleVersion" ADD CONSTRAINT "ArticleVersion_schemaId_fkey" FOREIGN KEY ("schemaId") REFERENCES "Schema"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ArticleVersion" ADD CONSTRAINT "ArticleVersion_schemaCode_fkey" FOREIGN KEY ("schemaCode") REFERENCES "Schema"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Schema" ADD CONSTRAINT "Schema_parentCode_fkey" FOREIGN KEY ("parentCode") REFERENCES "Schema"("code") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Schema" ADD CONSTRAINT "Schema_bodyId_fkey" FOREIGN KEY ("bodyId") REFERENCES "Body"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -143,7 +148,7 @@ ALTER TABLE "Schema" ADD CONSTRAINT "Schema_headerId_fkey" FOREIGN KEY ("headerI
 ALTER TABLE "Category" ADD CONSTRAINT "Category_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ArticleCategory" ADD CONSTRAINT "ArticleCategory_articleId_fkey" FOREIGN KEY ("articleId") REFERENCES "Article"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ArticleCategory" ADD CONSTRAINT "ArticleCategory_articleCode_fkey" FOREIGN KEY ("articleCode") REFERENCES "Article"("code") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ArticleCategory" ADD CONSTRAINT "ArticleCategory_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

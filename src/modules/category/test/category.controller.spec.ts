@@ -40,7 +40,7 @@ describe('CategoryController', () => {
   });
 
   describe('method: getCategoriesMap', () => {
-    it('should successfully return categories map', async () => {
+    it('return categories map', async () => {
       const articleLanguage = entityFactory.articleLanguage.extended({
         language: languages.UA,
         articleVersion: [],

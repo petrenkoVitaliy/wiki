@@ -2,7 +2,7 @@ import * as request from 'supertest';
 import { HttpStatus, INestApplication } from '@nestjs/common';
 
 import { CreateArticleDto, PatchArticleDto } from '../../../src/modules/article/article.dtos';
-import { MappedArticle } from '../../../src/modules/article/article.types';
+import { ArticleResponse } from '../../../src/modules/article/article.types';
 import { SchemaResponse } from '../../../src/modules/schema/schema.types';
 
 const getArticle = async (
@@ -151,7 +151,7 @@ const getArticleDrafts = async (
     articleCode: string;
   },
   testOptions?: {
-    article: MappedArticle;
+    article: ArticleResponse;
     articleVersions: {
       version: number;
       schemaDTO: {

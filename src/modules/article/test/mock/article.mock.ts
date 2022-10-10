@@ -4,7 +4,7 @@ const validArticleMock: CreateArticleDto = {
   name: 'name',
   body: 'body',
   header: 'header',
-  categoriesIds: [], // TODO
+  categoriesIds: [],
 };
 
 export const articleDTOMocks = {

@@ -15,7 +15,7 @@ describe('AppController', () => {
   });
 
   describe('method: getServerStatus', () => {
-    it('should successfully return server status', () => {
+    it('return server status', () => {
       expect(appController.getServerStatus()).toBe('still alive...');
     });
   });

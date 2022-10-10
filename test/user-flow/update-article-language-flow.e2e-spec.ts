@@ -1,15 +1,15 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { closeConnection, initTestModule } from '../helpers/hook';
-
 import { DefaultLanguages } from '../../src/constants/constants';
-import { MappedArticle } from '../../src/modules/article/article.types';
+import { ArticleResponse } from '../../src/modules/article/article.types';
+import { ErrorGenerator } from '../../src/utils/error.generator';
 
 import { articleRequest } from '../helpers/request/article.request';
 import { articleLanguageRequest } from '../helpers/request/article-language.request';
 
-describe('User flow: update article language', () => {
+describe('Update article language flow', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
@@ -22,12 +22,12 @@ describe('User flow: update article language', () => {
   });
 
   const context = {} as {
-    createdArticleUA1: MappedArticle;
-    createdArticleUA3: MappedArticle;
-    createdArticleUA4: MappedArticle;
+    createdArticleUA1: ArticleResponse;
+    createdArticleUA3: ArticleResponse;
+    createdArticleUA4: ArticleResponse;
   };
 
-  it('Should successfully create and update article language', async () => {
+  it('create and update article language', async () => {
     const articleDTO = {
       name: 'article_language_test_article_ua_1',
       body: 'body_1',
@@ -50,15 +50,17 @@ describe('User flow: update article language', () => {
       },
     });
 
+    const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
+
     const errorResponse = await articleRequest.getArticle(app, {
       code: context.createdArticleUA1.code,
       languageCode: DefaultLanguages.UA,
-      responseStatus: HttpStatus.NOT_FOUND,
+      responseStatus: expectedError.getStatus(),
     });
 
     expect(errorResponse).toEqual({
-      message: "Article isn't exist",
-      statusCode: HttpStatus.NOT_FOUND,
+      message: expectedError.message,
+      statusCode: expectedError.getStatus(),
     });
 
     await articleLanguageRequest.patchArticleLanguage(app, {
@@ -76,7 +78,7 @@ describe('User flow: update article language', () => {
     });
   });
 
-  it('Should successfully create and delete article language', async () => {
+  it('create and delete article language', async () => {
     const articleDTO = {
       name: 'article_language_test_article_ua_3',
       body: 'body_1',
@@ -95,19 +97,21 @@ describe('User flow: update article language', () => {
       articleCode: context.createdArticleUA3.code,
     });
 
+    const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
+
     const errorResponse = await articleRequest.getArticle(app, {
       code: context.createdArticleUA3.code,
       languageCode: DefaultLanguages.UA,
-      responseStatus: HttpStatus.NOT_FOUND,
+      responseStatus: expectedError.getStatus(),
     });
 
     expect(errorResponse).toEqual({
-      message: "Article isn't exist",
-      statusCode: HttpStatus.NOT_FOUND,
+      message: expectedError.message,
+      statusCode: expectedError.getStatus(),
     });
   });
 
-  it('Should successfully create delete and handle recreating error article language', async () => {
+  it('create, delete and handle recreating error article language', async () => {
     const articleDTO = {
       name: 'article_language_test_article_ua_4',
       body: 'body_1',
@@ -126,18 +130,20 @@ describe('User flow: update article language', () => {
       articleCode: context.createdArticleUA4.code,
     });
 
+    const expectedError = ErrorGenerator.duplicateEntity({ entityName: 'ArticleLanguage' });
+
     const errorResponse = await articleRequest.addArticleLanguage(app, {
       languageCode: DefaultLanguages.UA,
       articleCode: context.createdArticleUA4.code,
       articleDTO: {
         ...articleDTO,
       },
-      responseStatus: HttpStatus.BAD_REQUEST,
+      responseStatus: expectedError.getStatus(),
     });
 
     expect(errorResponse).toEqual({
-      message: 'ArticleLanguage already exists',
-      statusCode: HttpStatus.BAD_REQUEST,
+      message: expectedError.message,
+      statusCode: expectedError.getStatus(),
     });
   });
 });

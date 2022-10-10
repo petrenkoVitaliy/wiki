@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 
 import { ArticleVersionController } from './articleVersion.controller';
 import { ArticleVersionService } from './articleVersion.service';
-
 import { ArticleVersionRepository } from '../../repositories/articleVersion.repository';
 
 @Module({

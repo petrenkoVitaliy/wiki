@@ -1,7 +1,8 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { CreateSchemaDto } from '../modules/schema/schema.dtos';
 import { PrismaService } from '../prisma/prisma.service';
+import { ErrorGenerator } from '../utils/error.generator';
 
 @Injectable()
 export class SchemaRepository {
@@ -20,7 +21,7 @@ export class SchemaRepository {
 
       return result;
     } catch (ex) {
-      throw new HttpException("Schema isn't exist", HttpStatus.NOT_FOUND);
+      throw ErrorGenerator.notFound({ entityName: 'Schema' });
     }
   }
 
@@ -77,22 +78,22 @@ export class SchemaRepository {
 
       return result;
     } catch (ex) {
-      throw new HttpException("Schema isn't exist", HttpStatus.NOT_FOUND);
+      throw ErrorGenerator.notFound({ entityName: 'Schema' });
     }
   }
 
-  update(options: { code: string; parentCode?: string | null }) {
-    const { parentCode } = options;
+  update(payload: { parentCode?: string | null }, options: { code: string }) {
+    const { parentCode } = payload;
 
     return this.prisma.schema.update({
       where: {
         code: options.code,
       },
-      data: { ...(parentCode !== undefined ? { parentCode } : null) },
+      data: { parentCode },
     });
   }
 
-  updateWithRelations(options: { payload: CreateSchemaDto; code: string; parentCode?: string }) {
+  updateWithRelations(payload: CreateSchemaDto, options: { code: string; parentCode?: string }) {
     const { parentCode } = options;
 
     return this.prisma.schema.update({
@@ -114,12 +115,12 @@ export class SchemaRepository {
         body: {
           // TODO delete + create unique
           create: {
-            content: options.payload.body,
+            content: payload.body,
           },
         },
         header: {
           create: {
-            content: options.payload.header,
+            content: payload.header,
           },
         },
       },
@@ -139,7 +140,7 @@ export class SchemaRepository {
     });
   }
 
-  create(options: { payload: CreateSchemaDto; parentCode: string }) {
+  create(payload: CreateSchemaDto, options: { parentCode: string }) {
     return this.prisma.schema.create({
       data: {
         parentSchema: {
@@ -150,12 +151,12 @@ export class SchemaRepository {
 
         body: {
           create: {
-            content: options.payload.body,
+            content: payload.body,
           },
         },
         header: {
           create: {
-            content: options.payload.header,
+            content: payload.header,
           },
         },
       },

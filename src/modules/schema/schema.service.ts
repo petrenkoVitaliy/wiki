@@ -1,14 +1,15 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { convertNullable } from '../../utils/utils';
 import { SchemaRepository } from '../../repositories/schema.repository';
 import { ArticleVersionRepository } from '../../repositories/articleVersion.repository';
 import { PrismaService } from '../../prisma/prisma.service';
+import { ErrorGenerator } from '../../utils/error.generator';
 import { CreateSchemaDto } from './schema.dtos';
+import { ArticleVersionAggregation } from '../article-version/articleVersion.types';
 import {
-  ArticleVersionAggregation,
-  ArticleVersionAggregationExtended,
-  NewArticleVersionResponse,
+  ArticleVersionShortAggregation,
+  ApprovedArticleVersionResponse,
   SchemaAggregation,
   SchemaResponse,
 } from './schema.types';
@@ -39,8 +40,7 @@ export class SchemaService {
     payload: CreateSchemaDto,
     options: { code: string; languageCode: string; articleVersionCode: string },
   ) {
-    const schema = await this.schemaRepository.updateWithRelations({
-      payload: payload,
+    const schema = await this.schemaRepository.updateWithRelations(payload, {
       code: options.code,
     });
 
@@ -68,11 +68,10 @@ export class SchemaService {
     );
 
     if (!renovationCheckResult.isRenovateNeeded) {
-      throw new HttpException('Schema is already actual', HttpStatus.FORBIDDEN);
+      throw ErrorGenerator.alreadyActualSchema();
     }
 
-    const renovatedSchema = await this.schemaRepository.updateWithRelations({
-      payload: payload,
+    const renovatedSchema = await this.schemaRepository.updateWithRelations(payload, {
       code: options.code,
       parentCode: renovationCheckResult.actualVersion?.schema?.code,
     });
@@ -99,8 +98,7 @@ export class SchemaService {
       }),
     ]);
 
-    const schema = await this.schemaRepository.create({
-      payload: payload,
+    const schema = await this.schemaRepository.create(payload, {
       parentCode: currentArticleVersion.schemaCode,
     });
 
@@ -128,20 +126,24 @@ export class SchemaService {
       schemaToApprove.parentSchema?.code === parentArticleVersion.schema.code;
 
     if (!isCorrectDraftRelation || isPrimarySchema) {
-      throw new HttpException('Invalid schema to approve', HttpStatus.FORBIDDEN);
+      throw ErrorGenerator.alreadyApprovedSchema();
     }
 
     const [, , newArticleVersion] = await this.prisma.$transaction([
-      this.schemaRepository.update({
-        code: options.code,
-        parentCode: null,
-      }),
-      this.articleVersionRepository.update(
+      this.schemaRepository.update(
         {
-          code: parentArticleVersion.code,
+          parentCode: null,
         },
         {
+          code: options.code,
+        },
+      ),
+      this.articleVersionRepository.update(
+        {
           actual: null,
+        },
+        {
+          code: parentArticleVersion.code,
         },
       ),
       this.articleVersionRepository.create({
@@ -150,7 +152,7 @@ export class SchemaService {
       }),
     ]);
 
-    return this.mapToNewArticleVersionResponse(newArticleVersion);
+    return this.mapToApprovedArticleVersionResponse(newArticleVersion);
   }
 
   private async renovationCheck(
@@ -159,7 +161,7 @@ export class SchemaService {
     articleVersionCode: string,
   ): Promise<{
     isRenovateNeeded: boolean;
-    actualVersion?: ArticleVersionAggregation;
+    actualVersion?: ArticleVersionShortAggregation;
   }> {
     if (schema.articleVersion || !schema.parentCode) {
       return { isRenovateNeeded: false };
@@ -178,9 +180,9 @@ export class SchemaService {
     };
   }
 
-  private mapToNewArticleVersionResponse(
-    articleVersion: ArticleVersionAggregationExtended,
-  ): NewArticleVersionResponse {
+  private mapToApprovedArticleVersionResponse(
+    articleVersion: ArticleVersionAggregation,
+  ): ApprovedArticleVersionResponse {
     return {
       code: articleVersion.code,
       version: articleVersion.version,

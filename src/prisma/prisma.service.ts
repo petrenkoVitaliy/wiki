@@ -4,7 +4,6 @@ import { PrismaClient } from '@prisma/client';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   logger = new Logger();
-  transaction = this.$transaction;
 
   async onModuleInit() {
     this.logger.verbose('Prisma connected');

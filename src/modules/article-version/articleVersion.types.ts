@@ -7,7 +7,7 @@ export type ArticleVersionAggregation = ArticleVersion & {
   };
 };
 
-export type MappedArticleVersion = {
+export type ArticleVersionResponse = {
   code: string;
   version: number;
 

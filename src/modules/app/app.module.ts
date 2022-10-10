@@ -12,6 +12,7 @@ import { SchemaModule } from '../schema/schema.module';
 import { ArticleVersionModule } from '../article-version/articleVersion.module';
 import { ArticleLanguageModule } from '../article-language/articleLanguage.module';
 import { PrismaModule } from '../../prisma/prisma.module';
+
 @ApiTags('app')
 @Module({
   imports: [

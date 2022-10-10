@@ -1,4 +1,5 @@
 import { Routes } from '@nestjs/core';
+
 import { PrefixedRouteTree } from './routes.types';
 
 export const mapToRoutes = (prefixedRoutes: PrefixedRouteTree[], prefix = ''): Routes => {

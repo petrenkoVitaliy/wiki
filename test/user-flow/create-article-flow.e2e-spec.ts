@@ -1,15 +1,16 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 
-import { MappedArticle, MappedArticleDrafts } from '../../src/modules/article/article.types';
+import { ArticleResponse, ArticleDraftsResponse } from '../../src/modules/article/article.types';
 import { SchemaResponse } from '../../src/modules/schema/schema.types';
 import { DefaultLanguages } from '../../src/constants/constants';
+import { closeConnection, initTestModule } from '../helpers/hook';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { ErrorGenerator } from '../../src/utils/error.generator';
 
 import { articleRequest } from '../helpers/request/article.request';
 import { schemaRequest } from '../helpers/request/schema.request';
-import { closeConnection, initTestModule } from '../helpers/hook';
 
-describe('User flow: article creation', () => {
+describe('Article creation flow', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
@@ -22,14 +23,14 @@ describe('User flow: article creation', () => {
   });
 
   const context = {} as {
-    createdArticleEN: MappedArticle;
-    createdArticleUA: MappedArticle;
+    createdArticleEN: ArticleResponse;
+    createdArticleUA: ArticleResponse;
     createdDraft1: SchemaResponse;
     createdDraft2: SchemaResponse;
-    articleDrafts1: MappedArticleDrafts;
+    articleDrafts1: ArticleDraftsResponse;
   };
 
-  it('Should successfully create new article', async () => {
+  it('create new article', async () => {
     const articleDTO = {
       name: 'article_test_article_en_1',
       body: 'body_en_1',
@@ -43,7 +44,7 @@ describe('User flow: article creation', () => {
     });
   });
 
-  it('Should fail to create new article with same name', async () => {
+  it('fail to create new article with same name', async () => {
     const articleDTO = {
       name: 'article_test_article_en_1',
       body: 'body_en_1',
@@ -51,19 +52,21 @@ describe('User flow: article creation', () => {
       categoriesIds: [],
     };
 
+    const expectedError = ErrorGenerator.notUniqueProperty({ propertyName: 'Article name' });
+
     const errorResponse = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.EN,
       articleDTO,
-      responseStatus: HttpStatus.CONFLICT,
+      responseStatus: expectedError.getStatus(),
     });
 
     expect(errorResponse).toEqual({
-      message: 'Article name must be unique',
-      statusCode: HttpStatus.CONFLICT,
+      message: expectedError.message,
+      statusCode: expectedError.getStatus(),
     });
   });
 
-  it('Should successfully add new language to article', async () => {
+  it('add new language to article', async () => {
     const articleDTO = {
       name: 'article_test_article_en_3',
       body: 'body_ua_1',
@@ -82,7 +85,7 @@ describe('User flow: article creation', () => {
     );
   });
 
-  it('Should successfully create new draft 1', async () => {
+  it('create new draft 1', async () => {
     const schemaDTO = {
       body: 'body_ua_2',
       header: 'header_ua_2',
@@ -103,7 +106,7 @@ describe('User flow: article creation', () => {
     );
   });
 
-  it('Should successfully create new draft 2', async () => {
+  it('create new draft 2', async () => {
     const schemaDTO = {
       body: 'body_ua_3',
       header: 'header_ua_3',
@@ -123,7 +126,7 @@ describe('User flow: article creation', () => {
     );
   });
 
-  it('Should successfully get article drafts', async () => {
+  it('get article drafts', async () => {
     context.articleDrafts1 = await articleRequest.getArticleDrafts(
       app,
       {
@@ -146,7 +149,7 @@ describe('User flow: article creation', () => {
     );
   });
 
-  it('Should successfully get article', async () => {
+  it('get article', async () => {
     await articleRequest.getArticle(
       app,
       {

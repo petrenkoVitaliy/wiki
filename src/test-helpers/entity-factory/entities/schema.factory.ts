@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Header, Schema, Body, ArticleVersion } from '@prisma/client';
+
 import { BodyFactory } from './body.factory';
 import { HeaderFactory } from './header.factory';
 

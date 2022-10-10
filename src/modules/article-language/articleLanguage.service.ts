@@ -10,15 +10,18 @@ export class ArticleLanguageService {
   constructor(private articleLanguageRepository: ArticleLanguageRepository) {}
 
   async patchArticleLanguage(payload: PatchArticleLanguageDto, options: { code: string }) {
-    const articleLanguage = await this.articleLanguageRepository.update(options, payload);
+    const articleLanguage = await this.articleLanguageRepository.update(payload, options);
 
     return this.mapToArticleLanguageResponse(articleLanguage);
   }
 
   async deleteArticleLanguage(options: { code: string }) {
-    const articleLanguage = await this.articleLanguageRepository.update(options, {
-      archived: true,
-    });
+    const articleLanguage = await this.articleLanguageRepository.update(
+      {
+        archived: true,
+      },
+      options,
+    );
 
     return this.mapToArticleLanguageResponse(articleLanguage);
   }

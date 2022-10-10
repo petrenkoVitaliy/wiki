@@ -6,18 +6,20 @@ import { ArticleLanguageRepository } from '../../../repositories/articleLanguage
 import { LanguageRepository } from '../../../repositories/language.repository';
 
 import { ArticleController } from '../article.controller';
-import { ArticleService } from '../article.service';
 
+import { ArticleService } from '../article.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { PrismaMock } from '../../../prisma/prismaMock.service';
-import {
-  EntityFactory,
-  EntityFactoryModule,
-} from '../../../test-helpers/entity-factory/entityFactory';
 
 import { DefaultLanguages } from '../../../constants/constants';
 import { ArticleAggregation, ArticlesAggregation, LanguageAggregation } from '../article.types';
 import { getArticleAggregation, getArticleLanguageWithDraftsAggregation } from './helpers';
+import { ErrorGenerator } from '../../../utils/error.generator';
+
+import {
+  EntityFactory,
+  EntityFactoryModule,
+} from '../../../test-helpers/entity-factory/entityFactory';
 import { Mock } from './mock';
 
 describe('ArticleController', () => {
@@ -54,7 +56,7 @@ describe('ArticleController', () => {
   });
 
   describe('method: getAllArticles', () => {
-    it('should successfully return articles', async () => {
+    it('return articles', async () => {
       const articleLanguage = entityFactory.articleLanguage.extended({
         language: languages.UA,
         articleVersion: [],
@@ -78,7 +80,7 @@ describe('ArticleController', () => {
       });
     });
 
-    it('should successfully return empty articles', async () => {
+    it('return empty articles', async () => {
       PrismaMock.article.findMany.mockResolvedValue([]);
 
       const articles = await module.articleController.getAllArticles(languages.UA.code);
@@ -86,7 +88,7 @@ describe('ArticleController', () => {
       expect(articles).toEqual([]);
     });
 
-    it('should handle error', async () => {
+    it('handle error', async () => {
       const article = entityFactory.article.extended({
         articleLanguage: [],
       }) as ArticlesAggregation;
@@ -95,12 +97,12 @@ describe('ArticleController', () => {
 
       expect(() => {
         return module.articleController.getAllArticles(languages.UA.code);
-      }).rejects.toThrow(/ArticleLanguage should exist/);
+      }).rejects.toThrow(ErrorGenerator.invalidEntity({ entityName: 'ArticleLanguage' }).message);
     });
   });
 
   describe('method: getArticle', () => {
-    it('should successfully return article', async () => {
+    it('return article', async () => {
       const { article, articleLanguages, articleVersion } = getArticleAggregation({
         entityFactory,
         languages: [languages.UA, languages.EN],
@@ -139,17 +141,18 @@ describe('ArticleController', () => {
       });
     });
 
-    it('should handle article error', async () => {
+    it('handle not found Article error', async () => {
       const article = entityFactory.article.basic();
 
-      PrismaMock.article.findFirstOrThrow.mockRejectedValue(new Error("Article isn't exist"));
+      const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
+      PrismaMock.article.findFirstOrThrow.mockRejectedValue(expectedError.message);
 
       expect(() => {
         return module.articleController.getArticle(article.code, languages.UA.code);
-      }).rejects.toThrow("Article isn't exist");
+      }).rejects.toThrow(expectedError.message);
     });
 
-    it('should handle mapping articleLanguage error', async () => {
+    it('handle invalid ArticleLanguage error', async () => {
       const article = entityFactory.article.extended({
         articleLanguage: [],
       }) as ArticleAggregation;
@@ -158,10 +161,10 @@ describe('ArticleController', () => {
 
       expect(() => {
         return module.articleController.getArticle(article.code, languages.UA.code);
-      }).rejects.toThrow('ArticleLanguage should exist');
+      }).rejects.toThrow(ErrorGenerator.invalidEntity({ entityName: 'ArticleLanguage' }).message);
     });
 
-    it('should handle mapping articleVersion error', async () => {
+    it('handle invalid ArticleVersion error', async () => {
       const articleLanguage = entityFactory.articleLanguage.extended({
         language: languages.UA,
         articleVersion: [],
@@ -175,12 +178,12 @@ describe('ArticleController', () => {
 
       expect(() => {
         return module.articleController.getArticle(article.code, languages.UA.code);
-      }).rejects.toThrow('ArticleVersion should exist');
+      }).rejects.toThrow(ErrorGenerator.invalidEntity({ entityName: 'ArticleVersion' }).message);
     });
   });
 
   describe('method: getArticleWithVersions', () => {
-    it('should successfully return articles with version', async () => {
+    it('return articles with version', async () => {
       const { article, articleVersion } = getArticleAggregation({
         entityFactory,
         languages: [languages.UA],
@@ -201,19 +204,20 @@ describe('ArticleController', () => {
       ]);
     });
 
-    it('should handle not exist error', async () => {
+    it('handle not found Article error', async () => {
       const article = entityFactory.article.basic();
 
-      PrismaMock.article.findFirstOrThrow.mockRejectedValue(new Error("Article isn't exist"));
+      const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
+      PrismaMock.article.findFirstOrThrow.mockRejectedValue(expectedError.message);
 
       expect(
         module.articleController.getArticleWithVersions(article.code, languages.UA.code),
-      ).rejects.toThrow("Article isn't exist");
+      ).rejects.toThrow(expectedError.message);
     });
   });
 
   describe('method: getArticleDrafts', () => {
-    it("should successfully return articles' drafts", async () => {
+    it('return article drafts', async () => {
       const { schema1, schema2, articleLanguage, articleVersion1 } =
         getArticleLanguageWithDraftsAggregation(entityFactory);
 
@@ -271,21 +275,20 @@ describe('ArticleController', () => {
       });
     });
 
-    it('should handle language not exist error', async () => {
+    it('handle not found ArticleLanguage error', async () => {
       const article = entityFactory.article.basic();
 
-      PrismaMock.articleLanguage.findFirstOrThrow.mockRejectedValue(
-        new Error("Article language isn't exist"),
-      );
+      const expectedError = ErrorGenerator.notFound({ entityName: 'ArticleLanguage' });
+      PrismaMock.articleLanguage.findFirstOrThrow.mockRejectedValue(expectedError.message);
 
       expect(
         module.articleController.getArticleDrafts(article.code, languages.UA.code),
-      ).rejects.toThrow("Article language isn't exist");
+      ).rejects.toThrow(expectedError.message);
     });
   });
 
   describe('method: createArticle', () => {
-    it('should successfully create article', async () => {
+    it('create article', async () => {
       const { article, articleLanguages, articleVersion } = getArticleAggregation({
         entityFactory,
         languages: [languages.UA],
@@ -319,23 +322,24 @@ describe('ArticleController', () => {
       });
     });
 
-    it('should handle error', async () => {
+    it('handle not found Language error', async () => {
       const { article } = getArticleAggregation({
         entityFactory,
         languages: [languages.UA],
       });
 
-      PrismaMock.language.findFirstOrThrow.mockRejectedValue(new Error("Language isn't exist"));
+      const expectedError = ErrorGenerator.notFound({ entityName: 'Language' });
+      PrismaMock.language.findFirstOrThrow.mockRejectedValue(expectedError.message);
       PrismaMock.article.create.mockResolvedValue(article);
 
       expect(
         module.articleController.createArticle(article.code, Mock.articleDTOMocks.validArticleMock),
-      ).rejects.toThrow("Language isn't exist");
+      ).rejects.toThrow(expectedError.message);
     });
   });
 
   describe('method: addArticleLanguage', () => {
-    it('should successfully add article language', async () => {
+    it('add article language', async () => {
       const { article: articleUA } = getArticleAggregation({
         entityFactory,
         languages: [languages.UA],
@@ -379,7 +383,7 @@ describe('ArticleController', () => {
       });
     });
 
-    it('should not add existing article language', async () => {
+    it('handle duplicate ArticleLanguage error', async () => {
       const { article } = getArticleAggregation({
         entityFactory,
         languages: [languages.UA],
@@ -395,10 +399,10 @@ describe('ArticleController', () => {
           article.code,
           Mock.articleDTOMocks.validArticleMock,
         ),
-      ).rejects.toThrow('ArticleLanguage already exists');
+      ).rejects.toThrow(ErrorGenerator.duplicateEntity({ entityName: 'ArticleLanguage' }));
     });
 
-    it('should handle disabled article error', async () => {
+    it('handle invalid ArticleLanguage error', async () => {
       const { article: articleUA } = getArticleAggregation(
         {
           entityFactory,
@@ -423,12 +427,12 @@ describe('ArticleController', () => {
           article.code,
           Mock.articleDTOMocks.validArticleMock,
         ),
-      ).rejects.toThrow('ArticleLanguage should exist');
+      ).rejects.toThrow(ErrorGenerator.invalidEntity({ entityName: 'ArticleLanguage' }));
     });
   });
 
   describe('method: deleteArticle', () => {
-    it('should successfully delete article', async () => {
+    it('delete article', async () => {
       const { article } = getArticleAggregation({
         entityFactory,
         languages: [languages.UA],
@@ -445,7 +449,7 @@ describe('ArticleController', () => {
   });
 
   describe('method: patchArticle', () => {
-    it('should successfully update article', async () => {
+    it('update article', async () => {
       const { article, articleLanguages, articleVersion } = getArticleAggregation({
         entityFactory,
         languages: [languages.UA],

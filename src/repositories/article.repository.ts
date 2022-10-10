@@ -1,10 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ArticleType, Prisma } from '@prisma/client';
 
 import { convertNameToCode } from '../utils/utils';
 import { CreateArticleDto } from '../modules/article/article.dtos';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateArticleOptions } from '../modules/article/article.types';
+import { ErrorGenerator } from '../utils/error.generator';
 
 @Injectable()
 export class ArticleRepository {
@@ -29,7 +29,7 @@ export class ArticleRepository {
 
       return result;
     } catch (ex) {
-      throw new HttpException("Article isn't exist", HttpStatus.NOT_FOUND);
+      throw ErrorGenerator.notFound({ entityName: 'Article' });
     }
   }
 
@@ -85,7 +85,7 @@ export class ArticleRepository {
 
       return result;
     } catch (ex) {
-      throw new HttpException("Article isn't exist", HttpStatus.NOT_FOUND);
+      throw ErrorGenerator.notFound({ entityName: 'Article' });
     }
   }
 
@@ -201,14 +201,21 @@ export class ArticleRepository {
     } catch (ex) {
       if (ex instanceof Prisma.PrismaClientKnownRequestError) {
         if (ex.code === 'P2002') {
-          throw new HttpException('Article name must be unique', HttpStatus.CONFLICT);
+          throw ErrorGenerator.notUniqueProperty({ propertyName: 'Article name' });
         }
       }
       throw ex;
     }
   }
 
-  async update(payload: UpdateArticleOptions, options: { code: string; actualVersion?: boolean }) {
+  async update(
+    payload: {
+      enabled?: boolean;
+      archived?: boolean;
+      type?: ArticleType;
+    },
+    options: { code: string; actualVersion?: boolean },
+  ) {
     try {
       const result = await this.prisma.article.update({
         where: {
@@ -249,7 +256,7 @@ export class ArticleRepository {
 
       return result;
     } catch (ex) {
-      throw new HttpException("Article isn't exist", HttpStatus.NOT_FOUND);
+      throw ErrorGenerator.notFound({ entityName: 'Article' });
     }
   }
 }

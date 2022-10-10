@@ -1,7 +1,8 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Argument, Conditional } from 'src/types/utilityTypes';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { ErrorGenerator } from '../utils/error.generator';
 
 @Injectable()
 export class ArticleVersionRepository {
@@ -33,7 +34,7 @@ export class ArticleVersionRepository {
 
       return result;
     } catch (ex) {
-      throw new HttpException("Article version isn't exist", HttpStatus.NOT_FOUND);
+      throw ErrorGenerator.notFound({ entityName: 'ArticleVersion' });
     }
   }
 
@@ -66,15 +67,15 @@ export class ArticleVersionRepository {
 
       return result;
     } catch (ex) {
-      throw new HttpException("Article version isn't exist", HttpStatus.NOT_FOUND);
+      throw ErrorGenerator.notFound({ entityName: 'ArticleVersion' });
     }
   }
 
-  create(options: { articleLanguageCode: string; schemaCode: string }) {
+  create(payload: { articleLanguageCode: string; schemaCode: string }) {
     return this.prisma.articleVersion.create({
       data: {
-        articleLanguageCode: options.articleLanguageCode,
-        schemaCode: options.schemaCode,
+        articleLanguageCode: payload.articleLanguageCode,
+        schemaCode: payload.schemaCode,
       },
 
       include: {
@@ -89,11 +90,11 @@ export class ArticleVersionRepository {
   }
 
   update<T extends boolean>(
+    payload: { actual?: true | null; archived?: boolean; enabled?: boolean },
     options: {
       code: string;
       isExtended?: T;
     },
-    payload: { actual?: true | null; archived?: boolean; enabled?: boolean },
   ) {
     const updateOptions = {
       where: {
@@ -139,22 +140,3 @@ export class ArticleVersionRepository {
     >;
   }
 }
-
-// TODO
-
-// type ArticleUpdateResult<
-// Args extends Parameters<typeof this.prisma.articleVersion.update>[0],
-// > = ReturnType<typeof this.prisma.articleVersion.update<Args>>;
-//
-//
-//----------
-// type ArticleUpdateResult<T extends Prisma.ArticleVersionUpdateArgs> =
-//   Prisma.CheckSelect<
-//     T,
-//     Prisma.Prisma__ArticleVersionClient<ArticleVersion>,
-//     Prisma.Prisma__ArticleVersionClient<Prisma.ArticleVersionGetPayload<T>>
-//   >;
-
-// type UpdateResult = T extends true
-//   ? ArticleUpdateResult<typeof updateOptions & { include: typeof include }>
-//   : ArticleUpdateResult<typeof updateOptions>;

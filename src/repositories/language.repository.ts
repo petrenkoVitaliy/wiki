@@ -1,6 +1,7 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { ErrorGenerator } from '../utils/error.generator';
 
 @Injectable()
 export class LanguageRepository {
@@ -16,7 +17,7 @@ export class LanguageRepository {
 
       return result;
     } catch (ex) {
-      throw new HttpException("Language isn't exist", HttpStatus.NOT_FOUND);
+      throw ErrorGenerator.notFound({ entityName: 'Language' });
     }
   }
 }

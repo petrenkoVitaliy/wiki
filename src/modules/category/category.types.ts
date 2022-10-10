@@ -7,14 +7,6 @@ import {
   Language,
 } from '@prisma/client';
 
-export type ArticleLanguageWithCategoryAggregation = ArticleLanguage & {
-  article: Article & {
-    articleCategories: (ArticleCategory & {
-      category: Category;
-    })[];
-  };
-};
-
 export type CategoryAggregation = Category & {
   articleCategories: (ArticleCategory & {
     article: Article & {

@@ -5,7 +5,8 @@ import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
 export class CategoryRepository {
   constructor(private prisma: PrismaService) {}
-  async findMany(options: { language: string }) {
+
+  findMany(options: { language: string }) {
     return this.prisma.category.findMany({
       where: {
         enabled: true,

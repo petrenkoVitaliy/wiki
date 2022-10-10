@@ -12,15 +12,8 @@ export type SchemaAggregation = Schema & {
   articleVersion: ArticleVersion | null;
 };
 
-export type ArticleVersionAggregation = ArticleVersion & {
+export type ArticleVersionShortAggregation = ArticleVersion & {
   schema: Schema;
-};
-
-export type ArticleVersionAggregationExtended = ArticleVersion & {
-  schema: Schema & {
-    body: Body | null;
-    header: Header | null;
-  };
 };
 
 type SchemaContentResponse = {
@@ -38,7 +31,7 @@ export type SchemaResponse = {
   parentSchema: SchemaContentResponse;
 } & SchemaContentResponse;
 
-export type NewArticleVersionResponse = {
+export type ApprovedArticleVersionResponse = {
   code: string;
   version: number;
   schema: {
@@ -50,8 +43,4 @@ export type NewArticleVersionResponse = {
       content: string;
     };
   };
-};
-
-export type BasicArticleVersion = ArticleVersion & {
-  schema: Schema;
 };

@@ -13,6 +13,7 @@ import {
 } from '../../../test-helpers/entity-factory/entityFactory';
 import { DefaultLanguages } from '../../../constants/constants';
 import { ArticleVersionAggregation } from '../articleVersion.types';
+import { ErrorGenerator } from '../../../utils/error.generator';
 
 describe('ArticleVersionController', () => {
   const module = {} as {
@@ -41,7 +42,7 @@ describe('ArticleVersionController', () => {
   });
 
   describe('method: patchArticleVersion', () => {
-    it('should successfully patch article version', async () => {
+    it('patch article version', async () => {
       const schema = entityFactory.schema.extended({});
       const articleVersion = entityFactory.articleVersion.extended({
         schema,
@@ -74,7 +75,7 @@ describe('ArticleVersionController', () => {
   });
 
   describe('method: deleteArticleVersion', () => {
-    it('should successfully delete article version', async () => {
+    it('delete article version', async () => {
       const schema = entityFactory.schema.extended({});
       const articleVersion = entityFactory.articleVersion.extended({
         schema,
@@ -94,7 +95,7 @@ describe('ArticleVersionController', () => {
   });
 
   describe('method: getArticleVersion', () => {
-    it('should successfully return article version', async () => {
+    it('return article version', async () => {
       const schema = entityFactory.schema.extended({});
       const articleVersion = entityFactory.articleVersion.extended({
         schema,
@@ -122,16 +123,15 @@ describe('ArticleVersionController', () => {
       });
     });
 
-    it('should handle not found error', async () => {
+    it('handle not found ArticleVersion error', async () => {
       const articleVersion = entityFactory.articleVersion.basic({});
 
-      PrismaMock.articleVersion.findFirstOrThrow.mockRejectedValue(
-        new Error("Article version isn't exist"),
-      );
+      const expectedError = ErrorGenerator.notFound({ entityName: 'ArticleVersion' });
+      PrismaMock.articleVersion.findFirstOrThrow.mockRejectedValue(expectedError.message);
 
       expect(
         module.articleVersionController.getArticleVersion(languages.UA.code, articleVersion.code),
-      ).rejects.toThrow("Article version isn't exist");
+      ).rejects.toThrow(expectedError.message);
     });
   });
 });

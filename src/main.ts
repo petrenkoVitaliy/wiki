@@ -1,6 +1,7 @@
 import { INestApplication, Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 import { AppModule } from './modules/app/app.module';
 import { PrismaService } from './prisma/prisma.service';
 
@@ -14,7 +15,7 @@ function createSwaggerDocument(app: INestApplication) {
   SwaggerModule.setup('api', app, document);
 }
 
-async function bootstrap() {
+(async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe());
@@ -25,6 +26,4 @@ async function bootstrap() {
   await app.listen(PORT);
 
   logger.verbose(`Port: ${PORT}`);
-}
-
-bootstrap();
+})();

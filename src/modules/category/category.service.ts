@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CategoryRepository } from '../../repositories/category.repository';
 
+import { CategoryRepository } from '../../repositories/category.repository';
 import { notEmptyWithPredicate, pick } from '../../utils/utils';
 import { CategoriesTree, CategoryAggregation } from './category.types';
 

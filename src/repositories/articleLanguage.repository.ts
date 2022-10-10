@@ -1,7 +1,9 @@
-import { HttpException, Injectable, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { CreateArticleDto } from '../modules/article/article.dtos';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { ErrorGenerator } from '../utils/error.generator';
 import { convertNameToCode } from '../utils/utils';
 
 @Injectable()
@@ -29,6 +31,9 @@ export class ArticleLanguageRepository {
         include: {
           article: true,
           articleVersion: {
+            orderBy: {
+              version: Prisma.SortOrder.asc,
+            },
             include: {
               schema: {
                 include: {
@@ -52,13 +57,13 @@ export class ArticleLanguageRepository {
 
       return result;
     } catch (ex) {
-      throw new HttpException("Article language isn't exist", HttpStatus.NOT_FOUND);
+      throw ErrorGenerator.notFound({ entityName: 'ArticleLanguage' });
     }
   }
 
   update(
-    options: { code: string },
     payload: { name?: string; enabled?: boolean; archived?: boolean },
+    options: { code: string },
   ) {
     return this.prisma.articleLanguage.update({
       where: {

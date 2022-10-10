@@ -1,12 +1,14 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { DefaultLanguages } from '../../src/constants/constants';
-import { MappedArticle } from '../../src/modules/article/article.types';
 
-import { articleRequest } from '../helpers/request/article.request';
+import { DefaultLanguages } from '../../src/constants/constants';
+import { ArticleResponse } from '../../src/modules/article/article.types';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { ErrorGenerator } from '../../src/utils/error.generator';
 import { closeConnection, initTestModule } from '../helpers/hook';
 
-describe('User flow: update article', () => {
+import { articleRequest } from '../helpers/request/article.request';
+
+describe('Update article flow', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
@@ -19,11 +21,11 @@ describe('User flow: update article', () => {
   });
 
   const context = {} as {
-    createdArticleUA: MappedArticle;
-    createdArticleEN: MappedArticle;
+    createdArticleUA: ArticleResponse;
+    createdArticleEN: ArticleResponse;
   };
 
-  it('Should successfully create and update article', async () => {
+  it('create and update article', async () => {
     const articleDTO = {
       name: 'update_article_test_article_ua_1',
       body: 'body_1',
@@ -53,7 +55,7 @@ describe('User flow: update article', () => {
     );
   });
 
-  it('Should successfully handle not existence errors', async () => {
+  it('fail to get inactive article', async () => {
     await articleRequest.patchArticle(app, {
       code: 'incorrect code',
       languageCode: DefaultLanguages.UA,
@@ -63,14 +65,21 @@ describe('User flow: update article', () => {
       responseStatus: HttpStatus.NOT_FOUND,
     });
 
-    await articleRequest.getArticle(app, {
+    const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
+
+    const errorResponse = await articleRequest.getArticle(app, {
       code: context.createdArticleUA.code,
       languageCode: DefaultLanguages.UA,
-      responseStatus: HttpStatus.NOT_FOUND,
+      responseStatus: expectedError.getStatus(),
+    });
+
+    expect(errorResponse).toEqual({
+      message: expectedError.message,
+      statusCode: expectedError.getStatus(),
     });
   });
 
-  it('Should successfully create and delete article', async () => {
+  it('create and delete article', async () => {
     const articleDTO = {
       name: 'update_article_test_article_en_2',
       body: 'body_2',
@@ -89,20 +98,36 @@ describe('User flow: update article', () => {
     });
 
     await articleRequest.deleteArticle(app, {
+      code: context.createdArticleEN.code,
+      languageCode: DefaultLanguages.EN,
+    });
+
+    const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
+
+    const errorResponse = await articleRequest.getArticle(app, {
+      code: context.createdArticleEN.code,
+      languageCode: DefaultLanguages.EN,
+      responseStatus: expectedError.getStatus(),
+    });
+
+    expect(errorResponse).toEqual({
+      message: expectedError.message,
+      statusCode: expectedError.getStatus(),
+    });
+  });
+
+  it('fail to delete not existing article', async () => {
+    const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
+
+    const errorResponse = await articleRequest.deleteArticle(app, {
       code: 'incorrect code',
       languageCode: DefaultLanguages.EN,
-      responseStatus: HttpStatus.NOT_FOUND,
+      responseStatus: expectedError.getStatus(),
     });
 
-    await articleRequest.deleteArticle(app, {
-      code: context.createdArticleEN.code,
-      languageCode: DefaultLanguages.EN,
-    });
-
-    await articleRequest.getArticle(app, {
-      code: context.createdArticleEN.code,
-      languageCode: DefaultLanguages.EN,
-      responseStatus: HttpStatus.NOT_FOUND,
+    expect(errorResponse).toEqual({
+      message: expectedError.message,
+      statusCode: expectedError.getStatus(),
     });
   });
 });

@@ -1,19 +1,20 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { ArticleLanguageRepository } from '../../repositories/articleLanguage.repository';
 import { ArticleRepository } from '../../repositories/article.repository';
 import { CreateArticleDto, PatchArticleDto } from './article.dtos';
 import { convertNullable, pick } from '../../utils/utils';
 import { LanguageRepository } from '../../repositories/language.repository';
+import { ErrorGenerator } from '../../utils/error.generator';
 import {
   ArticleAggregation,
   ArticleLanguageWithDraftsAggregation,
   ArticlesAggregation,
   ArticleWithVersionsAggregation,
-  MappedArticle,
-  MappedArticleDrafts,
-  MappedArticleShort,
-  MappedVersion,
+  ArticleResponse,
+  ArticleDraftsResponse,
+  ArticleShortResponse,
+  ArticleVersionShortResponse,
 } from './article.types';
 
 @Injectable()
@@ -93,7 +94,7 @@ export class ArticleService {
     );
 
     if (isArticleLanguageExists) {
-      throw new HttpException('ArticleLanguage already exists', HttpStatus.BAD_REQUEST);
+      throw ErrorGenerator.duplicateEntity({ entityName: 'ArticleLanguage' });
     }
 
     await this.articleLanguageRepository.create(payload, {
@@ -129,8 +130,8 @@ export class ArticleService {
 
   private mapToArticleDraftsResponse(
     articleLanguageWithDrafts: ArticleLanguageWithDraftsAggregation,
-  ): MappedArticleDrafts {
-    const articleVersions: MappedArticleDrafts['articleVersions'] =
+  ): ArticleDraftsResponse {
+    const articleVersions: ArticleDraftsResponse['articleVersions'] =
       articleLanguageWithDrafts.articleVersion.map((articleVersion) => {
         return {
           ...pick(articleVersion, ['version', 'code']),
@@ -181,8 +182,8 @@ export class ArticleService {
 
   private mapToVersionsResponse(
     articleWithVersions: ArticleWithVersionsAggregation,
-  ): MappedVersion[] {
-    const versions: MappedVersion[] = [];
+  ): ArticleVersionShortResponse[] {
+    const versions: ArticleVersionShortResponse[] = [];
 
     articleWithVersions.articleLanguage.forEach((articleLanguage) => {
       articleLanguage.articleVersion.forEach((articleVersion) => {
@@ -199,7 +200,7 @@ export class ArticleService {
   private mapToArticleResponse(
     articleAggregation: ArticleAggregation,
     options: { languageCode: string },
-  ): MappedArticle {
+  ): ArticleResponse {
     const { articleLanguage, additionalLanguages } = articleAggregation.articleLanguage.reduce(
       (acc, articleLanguage) => {
         if (articleLanguage.language.code === options.languageCode) {
@@ -217,13 +218,13 @@ export class ArticleService {
     );
 
     if (!articleLanguage) {
-      throw new HttpException('ArticleLanguage should exist', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw ErrorGenerator.invalidEntity({ entityName: 'ArticleLanguage' });
     }
 
     const articleVersion = articleLanguage.articleVersion[0];
 
     if (!articleVersion || !articleVersion.actual) {
-      throw new HttpException('ArticleVersion should exist', HttpStatus.BAD_REQUEST);
+      throw ErrorGenerator.invalidEntity({ entityName: 'ArticleVersion' });
     }
 
     const languages = additionalLanguages.length
@@ -262,12 +263,12 @@ export class ArticleService {
 
   private mapToAllArticlesResponse(
     articlesAggregations: ArticlesAggregation[],
-  ): MappedArticleShort[] {
+  ): ArticleShortResponse[] {
     return articlesAggregations.map((articleAggregation) => {
       const articleLanguage = articleAggregation.articleLanguage[0];
 
       if (!articleLanguage) {
-        throw new HttpException('ArticleLanguage should exist', HttpStatus.INTERNAL_SERVER_ERROR);
+        throw ErrorGenerator.invalidEntity({ entityName: 'ArticleLanguage' });
       }
 
       return {

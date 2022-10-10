@@ -38,8 +38,9 @@ describe('ArticleLanguageController', () => {
     languages.UA = entityFactory.language.basic({ code: DefaultLanguages.UA });
     languages.EN = entityFactory.language.basic({ code: DefaultLanguages.EN });
   });
+
   describe('method: patchArticleLanguage', () => {
-    it('should successfully update article language', async () => {
+    it('update article language', async () => {
       const articleLanguage = entityFactory.articleLanguage.basic({});
 
       const patchArticleLanguageDto: PatchArticleLanguageDto = {
@@ -59,7 +60,7 @@ describe('ArticleLanguageController', () => {
       });
     });
 
-    it('should successfully delete article language', async () => {
+    it('delete article language', async () => {
       const articleLanguage = entityFactory.articleLanguage.basic({});
 
       PrismaMock.articleLanguage.update.mockResolvedValue({ ...articleLanguage, archived: true });

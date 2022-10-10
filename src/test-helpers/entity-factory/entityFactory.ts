@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+
 import { ArticleFactory } from './entities/article.factory';
 import { ArticleLanguageFactory } from './entities/articleLanguage.factory';
 import { ArticleVersionFactory } from './entities/articleVersion.factory';

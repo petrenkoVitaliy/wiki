@@ -1,14 +1,15 @@
 import { HttpStatus, INestApplication } from '@nestjs/common';
-import { DefaultLanguages } from '../../src/constants/constants';
-import { MappedArticle } from '../../src/modules/article/article.types';
-import { MappedArticleVersion } from '../../src/modules/article-version/articleVersion.types';
 
-import { articleRequest } from '../helpers/request/article.request';
-import { articleVersionRequest } from '../helpers/request/article-version.request';
+import { DefaultLanguages } from '../../src/constants/constants';
+import { ArticleResponse } from '../../src/modules/article/article.types';
+import { ArticleVersionResponse } from '../../src/modules/article-version/articleVersion.types';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { closeConnection, initTestModule } from '../helpers/hook';
 
-describe('User flow: update article version', () => {
+import { articleRequest } from '../helpers/request/article.request';
+import { articleVersionRequest } from '../helpers/request/article-version.request';
+
+describe('Update article version flow', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
@@ -21,11 +22,11 @@ describe('User flow: update article version', () => {
   });
 
   const context = {} as {
-    createdArticleUA: MappedArticle;
-    articleVersionUA: MappedArticleVersion;
+    createdArticleUA: ArticleResponse;
+    articleVersionUA: ArticleVersionResponse;
   };
 
-  it('Should successfully create and update article version', async () => {
+  it('create and update article version', async () => {
     const articleDTO = {
       name: 'article_version_test_article_ua_1',
       body: 'body_1',
@@ -58,7 +59,7 @@ describe('User flow: update article version', () => {
     });
   });
 
-  it('Should successfully create and delete articleVersion', async () => {
+  it('create and delete article version', async () => {
     const articleDTO = {
       name: 'article_version_test_article_ua_2',
       body: 'body_1',
