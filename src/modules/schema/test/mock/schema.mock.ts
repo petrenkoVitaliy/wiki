@@ -1,10 +1,9 @@
 import { CreateSchemaDto } from '../../schema.dtos';
 
 const validSchemaMock: CreateSchemaDto = {
-  body: 'body',
-  header: 'header',
+  section: ['section1'],
 };
 
-export const schemaDTOMocks = {
+export const schemaDtoMocks = {
   validSchemaMock,
 };

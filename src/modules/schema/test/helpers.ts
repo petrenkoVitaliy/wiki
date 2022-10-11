@@ -39,7 +39,7 @@ export const getSingleArticleVersionWithSiblings = (entityFactory: EntityFactory
   const baseArticleVersion = entityFactory.articleVersion.extended({ schema });
 
   const articleLanguage = entityFactory.articleLanguage.extended({
-    articleVersion: [baseArticleVersion],
+    articleVersions: [baseArticleVersion],
   });
 
   const articleVersion = {
@@ -51,10 +51,5 @@ export const getSingleArticleVersionWithSiblings = (entityFactory: EntityFactory
 };
 
 export const getSchemaFixture = (schema: Partial<SchemaAggregation> | null) => ({
-  header: {
-    content: schema?.header?.content,
-  },
-  body: {
-    content: schema?.body?.content,
-  },
+  section: schema?.sections || [],
 });

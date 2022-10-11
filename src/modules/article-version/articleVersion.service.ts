@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { convertNullable, pick } from '../../utils/utils';
+import { pick } from '../../utils/utils';
 import { ArticleVersionRepository } from '../../repositories/articleVersion.repository';
 import { ArticleVersionAggregation, ArticleVersionResponse } from './articleVersion.types';
 import { PatchArticleVersionDto } from './articleVersion.dtos';
@@ -52,16 +52,8 @@ export class ArticleVersionService {
       schema: {
         ...pick(articleVersion.schema, ['code']),
 
-        ...convertNullable(articleVersion.schema.body, (body) => ({
-          body: {
-            ...pick(body, ['content']),
-          },
-        })),
-
-        ...convertNullable(articleVersion.schema.header, (header) => ({
-          header: {
-            ...pick(header, ['content']),
-          },
+        sections: articleVersion.schema.sections.map((section) => ({
+          content: section.content,
         })),
       },
     };

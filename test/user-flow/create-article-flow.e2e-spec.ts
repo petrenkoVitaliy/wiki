@@ -31,24 +31,22 @@ describe('Article creation flow', () => {
   };
 
   it('create new article', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'article_test_article_en_1',
-      body: 'body_en_1',
-      header: 'header_en_1',
+      section: ['section1'],
       categoriesIds: [],
     };
 
     context.createdArticleEN = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.EN,
-      articleDTO,
+      articleDto,
     });
   });
 
   it('fail to create new article with same name', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'article_test_article_en_1',
-      body: 'body_en_1',
-      header: 'header_en_1',
+      section: ['section1'],
       categoriesIds: [],
     };
 
@@ -56,7 +54,7 @@ describe('Article creation flow', () => {
 
     const errorResponse = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.EN,
-      articleDTO,
+      articleDto,
       responseStatus: expectedError.getStatus(),
     });
 
@@ -67,10 +65,9 @@ describe('Article creation flow', () => {
   });
 
   it('add new language to article', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'article_test_article_en_3',
-      body: 'body_ua_1',
-      header: 'header_ua_1',
+      section: ['section1'],
       categoriesIds: [],
     };
 
@@ -78,7 +75,7 @@ describe('Article creation flow', () => {
       app,
       {
         languageCode: DefaultLanguages.UA,
-        articleDTO,
+        articleDto,
         articleCode: context.createdArticleEN.code,
       },
       { createdLanguages: [DefaultLanguages.EN] },
@@ -86,9 +83,8 @@ describe('Article creation flow', () => {
   });
 
   it('create new draft 1', async () => {
-    const schemaDTO = {
-      body: 'body_ua_2',
-      header: 'header_ua_2',
+    const schemaDto = {
+      section: ['section1'],
     };
 
     const basicSchema = context.createdArticleUA.articleLanguage.version.schema;
@@ -100,16 +96,15 @@ describe('Article creation flow', () => {
       {
         languageCode: DefaultLanguages.UA,
         articleVersionCode,
-        schemaDTO,
+        schemaDto,
       },
       { basicSchema },
     );
   });
 
   it('create new draft 2', async () => {
-    const schemaDTO = {
-      body: 'body_ua_3',
-      header: 'header_ua_3',
+    const schemaDto = {
+      section: ['section2'],
     };
 
     const basicSchema = context.createdArticleUA.articleLanguage.version.schema;
@@ -120,7 +115,7 @@ describe('Article creation flow', () => {
       {
         languageCode: DefaultLanguages.UA,
         articleVersionCode,
-        schemaDTO,
+        schemaDto,
       },
       { basicSchema },
     );
@@ -138,9 +133,8 @@ describe('Article creation flow', () => {
         articleVersions: [
           {
             version: context.createdArticleUA.articleLanguage.version.version,
-            schemaDTO: {
-              body: context.createdArticleUA.articleLanguage.version.schema.body?.content,
-              header: context.createdArticleUA.articleLanguage.version.schema.header?.content,
+            schemaDto: {
+              section: context.createdArticleUA.articleLanguage.version.schema.section,
             },
             drafts: [context.createdDraft1, context.createdDraft2],
           },
@@ -157,7 +151,7 @@ describe('Article creation flow', () => {
         code: context.createdArticleUA.code,
       },
       {
-        articleLanguageName: context.createdArticleUA.articleLanguage.name,
+        articleResponse: context.createdArticleUA,
         createdLanguages: [DefaultLanguages.EN],
       },
     );

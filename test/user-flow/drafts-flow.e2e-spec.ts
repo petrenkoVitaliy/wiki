@@ -30,16 +30,15 @@ describe('Draft creation flow', () => {
   };
 
   it('should create article with drafts', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'drafts_test_article_ua_1',
-      body: 'body_ua_1',
-      header: 'header_ua_1',
+      section: ['section1'],
       categoriesIds: [],
     };
 
     context.initialArticle = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.UA,
-      articleDTO,
+      articleDto,
     });
 
     context.createdArticle = { ...context.initialArticle };
@@ -49,18 +48,16 @@ describe('Draft creation flow', () => {
     context.createdDraft1 = await schemaRequest.createDraft(app, {
       languageCode: DefaultLanguages.UA,
       articleVersionCode,
-      schemaDTO: {
-        body: 'body_ua_2',
-        header: 'header_ua_2',
+      schemaDto: {
+        section: ['section2'],
       },
     });
 
     context.createdDraft2 = await schemaRequest.createDraft(app, {
       languageCode: DefaultLanguages.UA,
       articleVersionCode,
-      schemaDTO: {
-        body: 'body_ua_3',
-        header: 'header_ua_3',
+      schemaDto: {
+        section: ['section3'],
       },
     });
   });
@@ -75,22 +72,22 @@ describe('Draft creation flow', () => {
         code: context.createdDraft1.code,
         languageCode: DefaultLanguages.UA,
         articleVersionCode,
-        schemaDTO: {
-          body: 'body_ua_2_1',
-          header: 'header_ua_2_1',
+        schemaDto: {
+          section: ['section5'],
         },
       },
       {
         shouldBeRenovated: false,
         parentSchema: {
-          bodyContent: parentSchema.body?.content,
-          headerContent: parentSchema.header?.content,
+          section: parentSchema.section,
         },
       },
     );
   });
 
   it('fail to renovate valid draft schema', async () => {
+    const schemaDto = { section: ['section3', 'section8'] };
+
     const article = context.createdArticle;
     const articleVersion = article.articleLanguage.version;
 
@@ -100,7 +97,7 @@ describe('Draft creation flow', () => {
       code: context.createdDraft2.code,
       languageCode: DefaultLanguages.UA,
       articleVersionCode: articleVersion.code,
-      schemaDto: { body: 'body_ua_3_1', header: 'header_ua_3_1' },
+      schemaDto,
       responseStatus: expectedError.getStatus(),
     });
 
@@ -124,10 +121,7 @@ describe('Draft creation flow', () => {
       },
       {
         version: articleVersion.version + 1,
-        schemaDTO: {
-          body: context.createdDraft1.body?.content,
-          header: context.createdDraft1.header?.content,
-        },
+        schemaDto: { section: context.createdDraft1.section.map(({ content }) => content) },
       },
     );
 
@@ -143,17 +137,15 @@ describe('Draft creation flow', () => {
           {
             version: articleVersion.version,
             drafts: [context.createdDraft2],
-            schemaDTO: {
-              body: articleSchema.body?.content,
-              header: articleSchema.header?.content,
+            schemaDto: {
+              section: articleSchema.section.map(({ content }) => ({ content })),
             },
           },
           {
             version: articleVersion.version + 1,
             drafts: [],
-            schemaDTO: {
-              body: context.createdDraft1.body?.content,
-              header: context.createdDraft1.header?.content,
+            schemaDto: {
+              section: context.createdDraft1.section.map(({ content }) => ({ content })),
             },
           },
         ],
@@ -182,12 +174,10 @@ describe('Draft creation flow', () => {
       {
         shouldBeRenovated: true,
         schema: {
-          bodyContent: context.createdDraft2.body?.content,
-          headerContent: context.createdDraft2.header?.content,
+          section: context.createdDraft2.section,
         },
         parentSchema: {
-          bodyContent: articleSchema.body?.content,
-          headerContent: articleSchema.header?.content,
+          section: articleSchema.section,
         },
       },
     );
@@ -197,19 +187,20 @@ describe('Draft creation flow', () => {
     const article = context.createdArticle;
     const articleVersion = article.articleLanguage.version;
 
+    const schemaDto = { section: ['section3', 'section9'] };
+
     context.createdDraft2 = await schemaRequest.renovateDraftSchema(
       app,
       {
         code: context.createdDraft2.code,
         languageCode: DefaultLanguages.UA,
         articleVersionCode: articleVersion.code,
-        schemaDto: { body: 'body_ua_3_1', header: 'header_ua_3_1' },
+        schemaDto,
       },
       {
         shouldBeRenovated: false,
         parentSchema: {
-          body: context.createdDraft1.body?.content,
-          header: context.createdDraft1.header?.content,
+          section: context.createdDraft1.section.map(({ content }) => ({ content })),
         },
       },
     );
@@ -233,10 +224,7 @@ describe('Draft creation flow', () => {
       },
       {
         version: articleVersion.version + 1,
-        schemaDTO: {
-          body: context.createdDraft2.body?.content,
-          header: context.createdDraft2.header?.content,
-        },
+        schemaDto: { section: context.createdDraft2.section.map(({ content }) => content) },
       },
     );
   });
@@ -257,25 +245,22 @@ describe('Draft creation flow', () => {
           {
             version: 1,
             drafts: [],
-            schemaDTO: {
-              body: initialArticleSchema.body?.content,
-              header: initialArticleSchema.header?.content,
+            schemaDto: {
+              section: initialArticleSchema.section.map(({ content }) => ({ content })),
             },
           },
           {
             version: 2,
             drafts: [],
-            schemaDTO: {
-              body: context.createdDraft1.body?.content,
-              header: context.createdDraft1.header?.content,
+            schemaDto: {
+              section: context.createdDraft1.section.map(({ content }) => ({ content })),
             },
           },
           {
             version: 3,
             drafts: [],
-            schemaDTO: {
-              body: context.createdDraft2.body?.content,
-              header: context.createdDraft2.header?.content,
+            schemaDto: {
+              section: context.createdDraft2.section.map(({ content }) => ({ content })),
             },
           },
         ],

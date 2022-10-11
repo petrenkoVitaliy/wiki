@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ArticleLanguageRepository } from '../../repositories/articleLanguage.repository';
 import { ArticleRepository } from '../../repositories/article.repository';
 import { CreateArticleDto, PatchArticleDto } from './article.dtos';
-import { convertNullable, pick } from '../../utils/utils';
+import { pick } from '../../utils/utils';
 import { LanguageRepository } from '../../repositories/language.repository';
 import { ErrorGenerator } from '../../utils/error.generator';
 import {
@@ -89,7 +89,7 @@ export class ArticleService {
       this.languageRepository.findOne({ languageCode: options.languageCode }),
     ]);
 
-    const isArticleLanguageExists = article.articleLanguage.find(
+    const isArticleLanguageExists = article.articleLanguages.find(
       (articleLanguage) => articleLanguage.language.code === language.code,
     );
 
@@ -132,37 +132,21 @@ export class ArticleService {
     articleLanguageWithDrafts: ArticleLanguageWithDraftsAggregation,
   ): ArticleDraftsResponse {
     const articleVersions: ArticleDraftsResponse['articleVersions'] =
-      articleLanguageWithDrafts.articleVersion.map((articleVersion) => {
+      articleLanguageWithDrafts.articleVersions.map((articleVersion) => {
         return {
           ...pick(articleVersion, ['version', 'code']),
           schema: {
             code: articleVersion.schema.code,
 
-            ...convertNullable(articleVersion.schema.body, (body) => ({
-              body: {
-                ...pick(body, ['content']),
-              },
-            })),
-            ...convertNullable(articleVersion.schema.header, (header) => ({
-              header: {
-                ...pick(header, ['content']),
-              },
+            section: articleVersion.schema.sections.map((section) => ({
+              content: section.content,
             })),
           },
-          drafts: articleVersion.schema.childSchema.map((childSchema) => {
+          drafts: articleVersion.schema.childSchemas.map((childSchema) => {
             return {
               code: childSchema.code,
 
-              ...convertNullable(childSchema.body, (body) => ({
-                body: {
-                  ...pick(body, ['content']),
-                },
-              })),
-              ...convertNullable(childSchema.header, (header) => ({
-                header: {
-                  ...pick(header, ['content']),
-                },
-              })),
+              section: childSchema.sections.map((section) => ({ content: section.content })),
             };
           }),
         };
@@ -185,8 +169,8 @@ export class ArticleService {
   ): ArticleVersionShortResponse[] {
     const versions: ArticleVersionShortResponse[] = [];
 
-    articleWithVersions.articleLanguage.forEach((articleLanguage) => {
-      articleLanguage.articleVersion.forEach((articleVersion) => {
+    articleWithVersions.articleLanguages.forEach((articleLanguage) => {
+      articleLanguage.articleVersions.forEach((articleVersion) => {
         versions.push({
           code: articleVersion.code,
           version: articleVersion.version,
@@ -201,7 +185,7 @@ export class ArticleService {
     articleAggregation: ArticleAggregation,
     options: { languageCode: string },
   ): ArticleResponse {
-    const { articleLanguage, additionalLanguages } = articleAggregation.articleLanguage.reduce(
+    const { articleLanguage, additionalLanguages } = articleAggregation.articleLanguages.reduce(
       (acc, articleLanguage) => {
         if (articleLanguage.language.code === options.languageCode) {
           acc.articleLanguage = articleLanguage;
@@ -212,8 +196,8 @@ export class ArticleService {
         return acc;
       },
       { articleLanguage: null, additionalLanguages: [] } as {
-        articleLanguage: ArticleAggregation['articleLanguage'][0] | null;
-        additionalLanguages: ArticleAggregation['articleLanguage'];
+        articleLanguage: ArticleAggregation['articleLanguages'][0] | null;
+        additionalLanguages: ArticleAggregation['articleLanguages'];
       },
     );
 
@@ -221,7 +205,7 @@ export class ArticleService {
       throw ErrorGenerator.invalidEntity({ entityName: 'ArticleLanguage' });
     }
 
-    const articleVersion = articleLanguage.articleVersion[0];
+    const articleVersion = articleLanguage.articleVersions[0];
 
     if (!articleVersion || !articleVersion.actual) {
       throw ErrorGenerator.invalidEntity({ entityName: 'ArticleVersion' });
@@ -245,15 +229,8 @@ export class ArticleService {
           schema: {
             ...pick(articleVersion.schema, ['code']),
 
-            ...convertNullable(articleVersion.schema.body, (body) => ({
-              body: {
-                ...pick(body, ['content']),
-              },
-            })),
-            ...convertNullable(articleVersion.schema.header, (header) => ({
-              header: {
-                ...pick(header, ['content']),
-              },
+            section: articleVersion.schema.sections.map((section) => ({
+              content: section.content,
             })),
           },
         },
@@ -265,7 +242,7 @@ export class ArticleService {
     articlesAggregations: ArticlesAggregation[],
   ): ArticleShortResponse[] {
     return articlesAggregations.map((articleAggregation) => {
-      const articleLanguage = articleAggregation.articleLanguage[0];
+      const articleLanguage = articleAggregation.articleLanguages[0];
 
       if (!articleLanguage) {
         throw ErrorGenerator.invalidEntity({ entityName: 'ArticleLanguage' });

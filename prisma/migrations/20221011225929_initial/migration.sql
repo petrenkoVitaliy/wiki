@@ -55,8 +55,6 @@ CREATE TABLE "ArticleVersion" (
 CREATE TABLE "Schema" (
     "code" TEXT NOT NULL,
     "parentCode" TEXT,
-    "bodyId" INTEGER,
-    "headerId" INTEGER,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -64,23 +62,13 @@ CREATE TABLE "Schema" (
 );
 
 -- CreateTable
-CREATE TABLE "Body" (
-    "id" SERIAL NOT NULL,
+CREATE TABLE "Section" (
+    "code" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "Body_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Header" (
-    "id" SERIAL NOT NULL,
-    "content" TEXT NOT NULL,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Header_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Section_pkey" PRIMARY KEY ("code")
 );
 
 -- CreateTable
@@ -105,6 +93,12 @@ CREATE TABLE "ArticleCategory" (
     CONSTRAINT "ArticleCategory_pkey" PRIMARY KEY ("articleCode","categoryId")
 );
 
+-- CreateTable
+CREATE TABLE "_SchemaToSection" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "ArticleLanguage_name_key" ON "ArticleLanguage"("name");
 
@@ -123,6 +117,12 @@ CREATE UNIQUE INDEX "ArticleVersion_version_articleLanguageCode_key" ON "Article
 -- CreateIndex
 CREATE UNIQUE INDEX "ArticleVersion_actual_articleLanguageCode_key" ON "ArticleVersion"("actual", "articleLanguageCode");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "_SchemaToSection_AB_unique" ON "_SchemaToSection"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_SchemaToSection_B_index" ON "_SchemaToSection"("B");
+
 -- AddForeignKey
 ALTER TABLE "ArticleLanguage" ADD CONSTRAINT "ArticleLanguage_languageId_fkey" FOREIGN KEY ("languageId") REFERENCES "Language"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -139,12 +139,6 @@ ALTER TABLE "ArticleVersion" ADD CONSTRAINT "ArticleVersion_schemaCode_fkey" FOR
 ALTER TABLE "Schema" ADD CONSTRAINT "Schema_parentCode_fkey" FOREIGN KEY ("parentCode") REFERENCES "Schema"("code") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Schema" ADD CONSTRAINT "Schema_bodyId_fkey" FOREIGN KEY ("bodyId") REFERENCES "Body"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Schema" ADD CONSTRAINT "Schema_headerId_fkey" FOREIGN KEY ("headerId") REFERENCES "Header"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -152,3 +146,9 @@ ALTER TABLE "ArticleCategory" ADD CONSTRAINT "ArticleCategory_articleCode_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "ArticleCategory" ADD CONSTRAINT "ArticleCategory_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_SchemaToSection" ADD CONSTRAINT "_SchemaToSection_A_fkey" FOREIGN KEY ("A") REFERENCES "Schema"("code") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_SchemaToSection" ADD CONSTRAINT "_SchemaToSection_B_fkey" FOREIGN KEY ("B") REFERENCES "Section"("code") ON DELETE CASCADE ON UPDATE CASCADE;

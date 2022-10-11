@@ -16,7 +16,7 @@ model Language {
   id                         Int                      @default(autoincrement()) @id
   code                       String
 
-  articleLanguage            ArticleLanguage[]              
+  articleLanguages           ArticleLanguage[]              
 }
 
 model Article {
@@ -26,7 +26,7 @@ model Article {
   archived                   Boolean                  @default(false)
   type                       ArticleType              @default(common)
 
-  articleLanguage            ArticleLanguage[]
+  articleLanguages           ArticleLanguage[]
 
   articleCategories          ArticleCategory[] 
 
@@ -48,7 +48,7 @@ model ArticleLanguage {
   articleCode                String                     
   article                    Article                  @relation(fields: [articleCode], references: [code])
 
-  articleVersion             ArticleVersion[]
+  articleVersions            ArticleVersion[]
   
   updatedAt                  DateTime                 @updatedAt
   createdAt                  DateTime                 @default(now())
@@ -81,37 +81,21 @@ model Schema {
 
   parentCode                 String?
   parentSchema               Schema?                  @relation("parentSchema", fields: [parentCode], references: [code])
-  childSchema                Schema[]                 @relation("parentSchema")
+  childSchemas               Schema[]                 @relation("parentSchema")
 
   articleVersion             ArticleVersion?   
-
-  bodyId                     Int? 
-  body                       Body?                    @relation(fields: [bodyId], references: [id])
-
-  headerId                   Int? 
-  header                     Header?                  @relation(fields: [headerId], references: [id])
+  sections                   Section[]   
 
   updatedAt                  DateTime                 @updatedAt
   createdAt                  DateTime                 @default(now())
 }
 
-model Body {
-  id                         Int                      @default(autoincrement()) @id
+model Section {
+  code                       String                   @default(cuid()) @id
 
   content                    String                   @db.Text()
 
-  schema                     Schema[]                  
-
-  updatedAt                  DateTime                 @updatedAt
-  createdAt                  DateTime                 @default(now())
-}
-
-model Header {
-  id                         Int                      @default(autoincrement()) @id
-
-  content                    String                   @db.Text()
-
-  schema                     Schema[]
+  schemas                    Schema[]
   
   updatedAt                  DateTime                 @updatedAt
   createdAt                  DateTime                 @default(now())

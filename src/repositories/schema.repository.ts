@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { CreateSchemaDto } from '../modules/schema/schema.dtos';
+import { ContentUpdateGroups } from '../modules/schema/schema.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { ErrorGenerator } from '../utils/error.generator';
 
@@ -64,13 +65,11 @@ export class SchemaRepository {
 
         include: {
           articleVersion: true,
-          body: true,
-          header: true,
+          sections: true,
 
           parentSchema: {
             include: {
-              body: true,
-              header: true,
+              sections: true,
             },
           },
         },
@@ -93,7 +92,10 @@ export class SchemaRepository {
     });
   }
 
-  updateWithRelations(payload: CreateSchemaDto, options: { code: string; parentCode?: string }) {
+  updateWithRelations(
+    updateGroups: ContentUpdateGroups,
+    options: { code: string; parentCode?: string },
+  ) {
     const { parentCode } = options;
 
     return this.prisma.schema.update({
@@ -112,28 +114,19 @@ export class SchemaRepository {
             }
           : null),
 
-        body: {
-          // TODO delete + create unique
-          create: {
-            content: payload.body,
-          },
-        },
-        header: {
-          create: {
-            content: payload.header,
-          },
+        sections: {
+          create: updateGroups.toCreate,
+          delete: updateGroups.toDelete,
         },
       },
 
       include: {
         articleVersion: true,
-        body: true,
-        header: true,
+        sections: true,
 
         parentSchema: {
           include: {
-            body: true,
-            header: true,
+            sections: true,
           },
         },
       },
@@ -149,27 +142,20 @@ export class SchemaRepository {
           },
         },
 
-        body: {
-          create: {
-            content: payload.body,
-          },
-        },
-        header: {
-          create: {
-            content: payload.header,
-          },
+        sections: {
+          create: payload.section.map((content) => ({
+            content,
+          })),
         },
       },
 
       include: {
         articleVersion: true,
-        body: true,
-        header: true,
+        sections: true,
 
         parentSchema: {
           include: {
-            body: true,
-            header: true,
+            sections: true,
           },
         },
       },

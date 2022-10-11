@@ -28,16 +28,15 @@ describe('Update article language flow', () => {
   };
 
   it('create and update article language', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'article_language_test_article_ua_1',
-      body: 'body_1',
-      header: 'header_1',
+      section: ['section1'],
       categoriesIds: [],
     };
 
     context.createdArticleUA1 = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.UA,
-      articleDTO,
+      articleDto,
     });
 
     await articleLanguageRequest.patchArticleLanguage(app, {
@@ -79,16 +78,15 @@ describe('Update article language flow', () => {
   });
 
   it('create and delete article language', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'article_language_test_article_ua_3',
-      body: 'body_1',
-      header: 'header_1',
+      section: ['section1'],
       categoriesIds: [],
     };
 
     context.createdArticleUA3 = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.UA,
-      articleDTO,
+      articleDto,
     });
 
     await articleLanguageRequest.deleteArticleLanguage(app, {
@@ -112,16 +110,15 @@ describe('Update article language flow', () => {
   });
 
   it('create, delete and handle recreating error article language', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'article_language_test_article_ua_4',
-      body: 'body_1',
-      header: 'header_1',
+      section: ['section1'],
       categoriesIds: [],
     };
 
     context.createdArticleUA4 = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.UA,
-      articleDTO,
+      articleDto,
     });
 
     await articleLanguageRequest.deleteArticleLanguage(app, {
@@ -135,8 +132,8 @@ describe('Update article language flow', () => {
     const errorResponse = await articleRequest.addArticleLanguage(app, {
       languageCode: DefaultLanguages.UA,
       articleCode: context.createdArticleUA4.code,
-      articleDTO: {
-        ...articleDTO,
+      articleDto: {
+        ...articleDto,
       },
       responseStatus: expectedError.getStatus(),
     });

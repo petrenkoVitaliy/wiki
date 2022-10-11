@@ -28,13 +28,13 @@ export const getArticleAggregation = (
   const articleLanguages = languages.map((language) =>
     entityFactory.articleLanguage.extended({
       language,
-      articleVersion: [articleVersion],
+      articleVersions: [articleVersion],
     }),
   ) as LanguageAggregation[];
 
   const article = entityFactory.article.extended({
     ...options,
-    articleLanguage: articleLanguages,
+    articleLanguages: articleLanguages,
   }) as ArticleAggregation;
 
   return {
@@ -61,7 +61,7 @@ export const getArticleLanguageWithDraftsAggregation = (
   const schema1 = entityFactory.schema.extended({});
   const schema2 = entityFactory.schema.extended({});
   const schema3 = entityFactory.schema.extended({
-    childSchema: [schema1, schema2],
+    childSchemas: [schema1, schema2],
   });
 
   const articleVersion1 = entityFactory.articleVersion.extended({
@@ -79,7 +79,7 @@ export const getArticleLanguageWithDraftsAggregation = (
   const articleLanguage = entityFactory.articleLanguage.extended({
     ...options?.articleLanguage,
     article,
-    articleVersion: [articleVersion1, articleVersion2],
+    articleVersions: [articleVersion1, articleVersion2],
   }) as ArticleLanguageWithDraftsAggregation;
 
   return {

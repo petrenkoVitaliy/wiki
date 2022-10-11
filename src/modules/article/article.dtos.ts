@@ -10,13 +10,9 @@ export class CreateArticleDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString()
-  body: string;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  header: string;
+  @IsArray()
+  @IsString({ each: true })
+  section: string[];
 
   @ApiProperty()
   @IsNotEmpty()

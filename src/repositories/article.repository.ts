@@ -19,7 +19,7 @@ export class ArticleRepository {
           enabled: options.enabled,
         },
         include: {
-          articleLanguage: {
+          articleLanguages: {
             include: {
               language: true,
             },
@@ -45,7 +45,7 @@ export class ArticleRepository {
           code: options.code,
           archived: false,
           enabled: options.enabled,
-          articleLanguage: {
+          articleLanguages: {
             some: {
               archived: false,
               enabled: options.enabled,
@@ -56,10 +56,10 @@ export class ArticleRepository {
           },
         },
         include: {
-          articleLanguage: {
+          articleLanguages: {
             include: {
               language: true,
-              articleVersion: {
+              articleVersions: {
                 ...(options.actualVersion
                   ? { where: { actual: true } }
                   : {
@@ -72,8 +72,7 @@ export class ArticleRepository {
                 include: {
                   schema: {
                     include: {
-                      body: true,
-                      header: true,
+                      sections: true,
                     },
                   },
                 },
@@ -95,7 +94,7 @@ export class ArticleRepository {
         archived: false,
         enabled: true,
 
-        articleLanguage: {
+        articleLanguages: {
           some: {
             archived: false,
             enabled: true,
@@ -108,7 +107,7 @@ export class ArticleRepository {
       },
 
       include: {
-        articleLanguage: {
+        articleLanguages: {
           where: {
             language: {
               code: options.languageCode,
@@ -143,7 +142,7 @@ export class ArticleRepository {
               }
             : null),
 
-          articleLanguage: {
+          articleLanguages: {
             create: {
               name: payload.name,
               nameCode: convertNameToCode(payload.name),
@@ -154,19 +153,14 @@ export class ArticleRepository {
                 },
               },
 
-              articleVersion: {
+              articleVersions: {
                 create: {
                   schema: {
                     create: {
-                      body: {
-                        create: {
-                          content: payload.body,
-                        },
-                      },
-                      header: {
-                        create: {
-                          content: payload.header,
-                        },
+                      sections: {
+                        create: payload.section.map((content) => ({
+                          content,
+                        })),
                       },
                     },
                   },
@@ -176,18 +170,17 @@ export class ArticleRepository {
           },
         },
         include: {
-          articleLanguage: {
+          articleLanguages: {
             include: {
               language: true,
-              articleVersion: {
+              articleVersions: {
                 where: {
                   actual: true,
                 },
                 include: {
                   schema: {
                     include: {
-                      body: true,
-                      header: true,
+                      sections: true,
                     },
                   },
                 },
@@ -227,10 +220,10 @@ export class ArticleRepository {
           type: payload.type,
         },
         include: {
-          articleLanguage: {
+          articleLanguages: {
             include: {
               language: true,
-              articleVersion: {
+              articleVersions: {
                 ...(options.actualVersion
                   ? { where: { actual: true } }
                   : {
@@ -243,8 +236,7 @@ export class ArticleRepository {
                 include: {
                   schema: {
                     include: {
-                      body: true,
-                      header: true,
+                      sections: true,
                     },
                   },
                 },

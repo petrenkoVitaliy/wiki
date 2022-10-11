@@ -21,17 +21,17 @@ export class ArticleFactory {
   }
 
   extended(options: {
-    articleLanguage: ArticleLanguage[];
+    articleLanguages: ArticleLanguage[];
     enabled?: boolean;
     archived?: boolean;
   }): Article & {
-    articleLanguage: ArticleLanguage[];
+    articleLanguages: ArticleLanguage[];
   } {
     const basicEntity = this.basic(options);
 
     return {
       ...basicEntity,
-      articleLanguage: options.articleLanguage,
+      articleLanguages: options.articleLanguages,
     };
   }
 }

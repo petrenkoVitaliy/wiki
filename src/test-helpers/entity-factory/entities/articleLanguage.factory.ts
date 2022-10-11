@@ -36,11 +36,11 @@ export class ArticleLanguageFactory {
     articleCode?: string;
     enabled?: boolean;
     archived?: boolean;
-    articleVersion: ArticleVersion[];
+    articleVersions: ArticleVersion[];
   }): ArticleLanguage & {
     language?: Language;
     article?: Article;
-    articleVersion: ArticleVersion[];
+    articleVersions: ArticleVersion[];
   } {
     const basicEntity = this.basic({
       articleCode: options?.article?.code || options.articleCode,
@@ -54,7 +54,7 @@ export class ArticleLanguageFactory {
 
       language: options.language,
       article: options.article,
-      articleVersion: options.articleVersion,
+      articleVersions: options.articleVersions,
     };
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ArticleLanguage, ArticleVersion, Header, Schema, Body } from '@prisma/client';
+import { ArticleLanguage, ArticleVersion, Schema, Section } from '@prisma/client';
 
 @Injectable()
 export class ArticleVersionFactory {
@@ -29,14 +29,14 @@ export class ArticleVersionFactory {
   }
 
   extended(options: {
-    schema?: Schema & { body?: Body; header?: Header };
+    schema?: Schema & { sections: Section[] };
     articleLanguage?: ArticleLanguage;
     version?: number;
     actual?: boolean;
     archived?: boolean;
     enabled?: boolean;
   }): ArticleVersion & {
-    schema?: Schema & { body?: Body; header?: Header };
+    schema?: Schema & { sections: Section[] };
     articleLanguage?: ArticleLanguage;
   } {
     const basicEntity = this.basic({

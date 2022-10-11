@@ -8,14 +8,6 @@ export const pick = <T extends object, K extends keyof T>(obj: T, keys: K[]): Pi
   return pickedObj as Pick<T, K>;
 };
 
-export const convertNullable = <T, P>(value: T | null | undefined, convert: (value: T) => P) => {
-  if (value) {
-    return convert(value);
-  }
-
-  return null;
-};
-
 export const notEmptyWithPredicate =
   <T>(predicate: (element: T) => boolean) =>
   (element: T | null | undefined): element is T => {

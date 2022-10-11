@@ -25,8 +25,7 @@ export class ArticleVersionRepository {
         include: {
           schema: {
             include: {
-              body: true,
-              header: true,
+              sections: true,
             },
           },
         },
@@ -51,7 +50,7 @@ export class ArticleVersionRepository {
             archived: false,
             enabled: true,
 
-            articleVersion: {
+            articleVersions: {
               some: {
                 code: options.code,
                 archived: false,
@@ -81,8 +80,7 @@ export class ArticleVersionRepository {
       include: {
         schema: {
           include: {
-            body: true,
-            header: true,
+            sections: true,
           },
         },
       },
@@ -110,8 +108,7 @@ export class ArticleVersionRepository {
     const include = {
       schema: {
         include: {
-          body: true,
-          header: true,
+          sections: true,
         },
       },
     };

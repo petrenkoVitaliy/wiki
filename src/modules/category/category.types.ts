@@ -10,7 +10,7 @@ import {
 export type CategoryAggregation = Category & {
   articleCategories: (ArticleCategory & {
     article: Article & {
-      articleLanguage: (ArticleLanguage & {
+      articleLanguages: (ArticleLanguage & {
         language: Language;
       })[];
     };

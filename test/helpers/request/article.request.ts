@@ -13,8 +13,8 @@ const getArticle = async (
     responseStatus?: HttpStatus;
   },
   testOptions?: {
+    articleResponse: ArticleResponse;
     createdLanguages: string[];
-    articleLanguageName: string;
   },
 ) => {
   const response = await request(app.getHttpServer())
@@ -27,11 +27,12 @@ const getArticle = async (
           type: 'common',
           languages: testOptions.createdLanguages,
           articleLanguage: {
-            name: testOptions.articleLanguageName,
+            name: testOptions.articleResponse.articleLanguage.name,
             version: {
               schema: {
-                body: {},
-                header: {},
+                section: testOptions.articleResponse.articleLanguage.version.schema.section.map(
+                  ({ content }) => ({ content }),
+                ),
               },
             },
           },
@@ -46,13 +47,13 @@ const createArticle = async (
   app: INestApplication,
   options: {
     languageCode: string;
-    articleDTO: CreateArticleDto;
+    articleDto: CreateArticleDto;
     responseStatus?: HttpStatus;
   },
 ) => {
   const response = await request(app.getHttpServer())
     .post(`/${options.languageCode}/article`)
-    .send({ ...options.articleDTO })
+    .send({ ...options.articleDto })
     .expect(options.responseStatus || HttpStatus.CREATED)
     .expect(function (res) {
       if (!options.responseStatus) {
@@ -60,16 +61,13 @@ const createArticle = async (
           type: 'common',
           languages: [],
           articleLanguage: {
-            name: options.articleDTO.name,
+            name: options.articleDto.name,
             version: {
               version: 1,
               schema: {
-                body: {
-                  content: options.articleDTO.body,
-                },
-                header: {
-                  content: options.articleDTO.header,
-                },
+                section: options.articleDto.section.map((content) => ({
+                  content,
+                })),
               },
             },
           },
@@ -85,18 +83,17 @@ const patchArticle = async (
   options: {
     code: string;
     languageCode: string;
-    articleDTO: PatchArticleDto;
+    articleDto: PatchArticleDto;
     responseStatus?: HttpStatus;
   },
   testOptions?: {
     name: string;
-    body: string;
-    header: string;
+    section: string[];
   },
 ) => {
   const response = await request(app.getHttpServer())
     .patch(`/${options.languageCode}/article/${options.code}`)
-    .send({ ...options.articleDTO })
+    .send({ ...options.articleDto })
     .expect(options.responseStatus || HttpStatus.OK)
     .expect(function (res) {
       if (!options.responseStatus && testOptions) {
@@ -108,12 +105,7 @@ const patchArticle = async (
             version: {
               version: 1,
               schema: {
-                body: {
-                  content: testOptions.body,
-                },
-                header: {
-                  content: testOptions.header,
-                },
+                section: testOptions.section.map((content) => ({ content })),
               },
             },
           },
@@ -154,9 +146,8 @@ const getArticleDrafts = async (
     article: ArticleResponse;
     articleVersions: {
       version: number;
-      schemaDTO: {
-        body?: string;
-        header?: string;
+      schemaDto: {
+        section: { content: string }[];
       };
       drafts: SchemaResponse[];
     }[];
@@ -174,20 +165,10 @@ const getArticleDrafts = async (
           articleVersions: testOptions.articleVersions.map((articleVersion) => ({
             version: articleVersion.version,
             schema: {
-              body: {
-                content: articleVersion.schemaDTO.body,
-              },
-              header: {
-                content: articleVersion.schemaDTO.header,
-              },
+              section: articleVersion.schemaDto.section,
             },
             drafts: articleVersion.drafts.map((draft) => ({
-              body: {
-                content: draft.body?.content,
-              },
-              header: {
-                content: draft.header?.content,
-              },
+              section: draft.section,
             })),
           })),
         });
@@ -202,7 +183,7 @@ const addArticleLanguage = async (
   options: {
     languageCode: string;
     articleCode: string;
-    articleDTO: CreateArticleDto;
+    articleDto: CreateArticleDto;
     responseStatus?: HttpStatus;
   },
   testOptions?: {
@@ -211,7 +192,7 @@ const addArticleLanguage = async (
 ) => {
   const response = await request(app.getHttpServer())
     .post(`/${options.languageCode}/article/${options.articleCode}`)
-    .send({ ...options.articleDTO })
+    .send({ ...options.articleDto })
     .expect(options.responseStatus || HttpStatus.CREATED)
     .expect(function (res) {
       if (!options.responseStatus && testOptions) {
@@ -219,16 +200,13 @@ const addArticleLanguage = async (
           type: 'common',
           languages: testOptions.createdLanguages,
           articleLanguage: {
-            name: options.articleDTO.name,
+            name: options.articleDto.name,
             version: {
               version: 1,
               schema: {
-                body: {
-                  content: options.articleDTO.body,
-                },
-                header: {
-                  content: options.articleDTO.header,
-                },
+                section: options.articleDto.section.map((content) => ({
+                  content,
+                })),
               },
             },
           },

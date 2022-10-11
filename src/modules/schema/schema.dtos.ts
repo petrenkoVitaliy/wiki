@@ -1,11 +1,8 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsArray } from 'class-validator';
 
 export class CreateSchemaDto {
   @IsNotEmpty()
-  @IsString()
-  body: string;
-
-  @IsNotEmpty()
-  @IsString()
-  header: string;
+  @IsArray()
+  @IsString({ each: true })
+  section: string[];
 }

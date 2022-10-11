@@ -2,11 +2,10 @@ import { CreateArticleDto } from '../../article.dtos';
 
 const validArticleMock: CreateArticleDto = {
   name: 'name',
-  body: 'body',
-  header: 'header',
+  section: ['section1'],
   categoriesIds: [],
 };
 
-export const articleDTOMocks = {
+export const articleDtoMocks = {
   validArticleMock,
 };

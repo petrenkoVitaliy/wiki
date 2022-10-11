@@ -3,6 +3,7 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 
 import { MappedSchema } from '../../../src/modules/article/article.types';
 import { CreateSchemaDto } from '../../../src/modules/schema/schema.dtos';
+import { sortAny } from '../utils';
 
 const getSchema = async (
   app: INestApplication,
@@ -10,12 +11,10 @@ const getSchema = async (
   testOptions?: {
     shouldBeRenovated: boolean;
     parentSchema: {
-      headerContent?: string;
-      bodyContent?: string;
+      section: { content: string }[];
     };
     schema: {
-      headerContent?: string;
-      bodyContent?: string;
+      section: { content: string }[];
     };
   },
 ) => {
@@ -29,19 +28,9 @@ const getSchema = async (
         expect(res.body).toMatchObject({
           shouldBeRenovated: testOptions.shouldBeRenovated,
           parentSchema: {
-            header: {
-              content: testOptions.parentSchema.headerContent,
-            },
-            body: {
-              content: testOptions.parentSchema.bodyContent,
-            },
+            section: testOptions.parentSchema.section,
           },
-          header: {
-            content: testOptions.schema.headerContent,
-          },
-          body: {
-            content: testOptions.schema.bodyContent,
-          },
+          section: testOptions.schema.section,
         });
       }
     });
@@ -54,7 +43,7 @@ const createDraft = async (
   options: {
     languageCode: string;
     articleVersionCode: string;
-    schemaDTO: CreateSchemaDto;
+    schemaDto: CreateSchemaDto;
   },
   testOptions?: {
     basicSchema: MappedSchema;
@@ -62,26 +51,18 @@ const createDraft = async (
 ) => {
   const response = await request(app.getHttpServer())
     .post(`/${options.languageCode}/article-version/${options.articleVersionCode}/schema`)
-    .send({ ...options.schemaDTO })
+    .send({ ...options.schemaDto })
     .expect(HttpStatus.CREATED)
     .expect(function (res) {
       if (testOptions) {
         expect(res.body).toMatchObject({
           shouldBeRenovated: false,
           parentSchema: {
-            header: {
-              content: testOptions.basicSchema.header?.content,
-            },
-            body: {
-              content: testOptions.basicSchema.body?.content,
-            },
+            section: testOptions.basicSchema.section,
           },
-          header: {
-            content: options.schemaDTO.header,
-          },
-          body: {
-            content: options.schemaDTO.body,
-          },
+          section: options.schemaDto.section.map((content) => ({
+            content,
+          })),
         });
       }
     });
@@ -95,13 +76,12 @@ const updateDraft = async (
     code: string;
     languageCode: string;
     articleVersionCode: string;
-    schemaDTO: CreateSchemaDto;
+    schemaDto: CreateSchemaDto;
   },
   testOptions?: {
     shouldBeRenovated: boolean;
     parentSchema: {
-      headerContent?: string;
-      bodyContent?: string;
+      section: { content: string }[];
     };
   },
 ) => {
@@ -109,26 +89,16 @@ const updateDraft = async (
     .put(
       `/${options.languageCode}/article-version/${options.articleVersionCode}/schema/${options.code}`,
     )
-    .send({ ...options.schemaDTO })
+    .send({ ...options.schemaDto })
     .expect(HttpStatus.OK)
     .expect(function (res) {
       if (testOptions) {
         expect(res.body).toMatchObject({
           shouldBeRenovated: testOptions.shouldBeRenovated,
           parentSchema: {
-            header: {
-              content: testOptions.parentSchema.headerContent,
-            },
-            body: {
-              content: testOptions.parentSchema.bodyContent,
-            },
+            section: testOptions.parentSchema.section,
           },
-          header: {
-            content: options.schemaDTO.header,
-          },
-          body: {
-            content: options.schemaDTO.body,
-          },
+          section: options.schemaDto.section.map((content) => ({ content })),
         });
       }
     });
@@ -145,9 +115,8 @@ const approveDraft = async (
   },
   testOptions?: {
     version: number;
-    schemaDTO: {
-      body?: string;
-      header?: string;
+    schemaDto: {
+      section: string[];
     };
   },
 ) => {
@@ -161,12 +130,7 @@ const approveDraft = async (
         expect(res.body).toMatchObject({
           version: testOptions.version,
           schema: {
-            header: {
-              content: testOptions.schemaDTO.header,
-            },
-            body: {
-              content: testOptions.schemaDTO.body,
-            },
+            section: testOptions.schemaDto.section.map((content) => ({ content })),
           },
         });
       }
@@ -187,8 +151,7 @@ const renovateDraftSchema = async (
   testOptions?: {
     shouldBeRenovated: boolean;
     parentSchema: {
-      body?: string;
-      header?: string;
+      section: { content: string }[];
     };
   },
 ) => {
@@ -203,20 +166,20 @@ const renovateDraftSchema = async (
         expect(res.body).toMatchObject({
           shouldBeRenovated: testOptions.shouldBeRenovated,
           parentSchema: {
-            header: {
-              content: testOptions.parentSchema.header,
-            },
-            body: {
-              content: testOptions.parentSchema.body,
-            },
+            // section: []
           },
-          header: {
-            content: options.schemaDto.header,
-          },
-          body: {
-            content: options.schemaDto.body,
-          },
+          // section: [] sort TODO
         });
+
+        const responseSections: { content: string }[] = res.body.section;
+
+        expect(sortAny(responseSections.map(({ content }) => content))).toEqual(
+          sortAny(options.schemaDto.section),
+        );
+
+        expect(sortAny(res.body.parentSchema.section)).toEqual(
+          sortAny(testOptions.parentSchema.section),
+        );
       }
     });
 

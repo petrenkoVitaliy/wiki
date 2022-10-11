@@ -1,5 +1,5 @@
-import { articleDTOMocks } from './article.mock';
+import { articleDtoMocks } from './article.mock';
 
 export const Mock = {
-  articleDTOMocks,
+  articleDtoMocks,
 };

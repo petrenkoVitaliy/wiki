@@ -1,28 +1,33 @@
-import { Header, Schema, Body, ArticleVersion } from '@prisma/client';
+import { Schema, ArticleVersion, Section } from '@prisma/client';
 
 export type SchemaAggregation = Schema & {
   parentSchema:
     | (Schema & {
-        body: Body | null;
-        header: Header | null;
+        sections: Section[];
       })
     | null;
-  body: Body | null;
-  header: Header | null;
   articleVersion: ArticleVersion | null;
+  sections: Section[];
 };
 
 export type ArticleVersionShortAggregation = ArticleVersion & {
   schema: Schema;
 };
 
+export type ContentUpdateGroups = {
+  toDelete: {
+    code: string;
+  }[];
+  toConnect: {
+    code: string;
+  }[];
+  toCreate: {
+    content: string;
+  }[];
+};
+
 type SchemaContentResponse = {
-  body?: {
-    content: string;
-  };
-  header?: {
-    content: string;
-  };
+  section: { content: string }[];
 };
 
 export type SchemaResponse = {
@@ -36,11 +41,6 @@ export type ApprovedArticleVersionResponse = {
   version: number;
   schema: {
     code: string;
-    body?: {
-      content: string;
-    };
-    header?: {
-      content: string;
-    };
+    section: { content: string }[];
   };
 };

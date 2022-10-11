@@ -26,16 +26,15 @@ describe('Update article flow', () => {
   };
 
   it('create and update article', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'update_article_test_article_ua_1',
-      body: 'body_1',
-      header: 'header_1',
+      section: ['section2'],
       categoriesIds: [],
     };
 
     context.createdArticleUA = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.UA,
-      articleDTO,
+      articleDto,
     });
 
     context.createdArticleUA = await articleRequest.patchArticle(
@@ -43,14 +42,13 @@ describe('Update article flow', () => {
       {
         code: context.createdArticleUA.code,
         languageCode: DefaultLanguages.UA,
-        articleDTO: {
+        articleDto: {
           enabled: false,
         },
       },
       {
-        name: articleDTO.name,
-        body: articleDTO.body,
-        header: articleDTO.header,
+        name: articleDto.name,
+        section: articleDto.section,
       },
     );
   });
@@ -59,7 +57,7 @@ describe('Update article flow', () => {
     await articleRequest.patchArticle(app, {
       code: 'incorrect code',
       languageCode: DefaultLanguages.UA,
-      articleDTO: {
+      articleDto: {
         enabled: false,
       },
       responseStatus: HttpStatus.NOT_FOUND,
@@ -80,16 +78,15 @@ describe('Update article flow', () => {
   });
 
   it('create and delete article', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'update_article_test_article_en_2',
-      body: 'body_2',
-      header: 'header_2',
+      section: ['section4'],
       categoriesIds: [],
     };
 
     context.createdArticleEN = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.EN,
-      articleDTO,
+      articleDto,
     });
 
     await articleRequest.getArticle(app, {

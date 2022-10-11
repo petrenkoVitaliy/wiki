@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
-import { convertNullable } from '../../utils/utils';
 import { SchemaRepository } from '../../repositories/schema.repository';
 import { ArticleVersionRepository } from '../../repositories/articleVersion.repository';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ErrorGenerator } from '../../utils/error.generator';
 import { CreateSchemaDto } from './schema.dtos';
 import { ArticleVersionAggregation } from '../article-version/articleVersion.types';
+import { ContentDiffManager } from '../../services/contentDiffManager.service';
 import {
   ArticleVersionShortAggregation,
   ApprovedArticleVersionResponse,
@@ -40,17 +40,27 @@ export class SchemaService {
     payload: CreateSchemaDto,
     options: { code: string; languageCode: string; articleVersionCode: string },
   ) {
-    const schema = await this.schemaRepository.updateWithRelations(payload, {
+    // TODO optimize
+    const schema = await this.schemaRepository.findOneWithParent({
+      ...options,
+    });
+
+    const updateGroups = ContentDiffManager.groupSectionsForUpdate(
+      schema.sections,
+      payload.section,
+    );
+
+    const updatedSchema = await this.schemaRepository.updateWithRelations(updateGroups, {
       code: options.code,
     });
 
     const renovationCheckResult = await this.renovationCheck(
-      schema,
+      updatedSchema,
       options.languageCode,
       options.articleVersionCode,
     );
 
-    return this.mapToSchemaResponse(schema, {
+    return this.mapToSchemaResponse(updatedSchema, {
       shouldBeRenovated: renovationCheckResult.isRenovateNeeded,
     });
   }
@@ -71,7 +81,14 @@ export class SchemaService {
       throw ErrorGenerator.alreadyActualSchema();
     }
 
-    const renovatedSchema = await this.schemaRepository.updateWithRelations(payload, {
+    // TODO is renovation needed?
+
+    const updateGroups = ContentDiffManager.groupSectionsForUpdate(
+      schema.sections,
+      payload.section,
+    );
+
+    const renovatedSchema = await this.schemaRepository.updateWithRelations(updateGroups, {
       code: options.code,
       parentCode: renovationCheckResult.actualVersion?.schema?.code,
     });
@@ -189,11 +206,8 @@ export class SchemaService {
 
       schema: {
         code: articleVersion.schema.code,
-        ...convertNullable(articleVersion.schema.header, (header) => ({
-          header: { content: header.content },
-        })),
-        ...convertNullable(articleVersion.schema.body, (body) => ({
-          body: { content: body.content },
+        section: articleVersion.schema.sections.map((section) => ({
+          content: section.content,
         })),
       },
     };
@@ -208,19 +222,14 @@ export class SchemaService {
       shouldBeRenovated: options.shouldBeRenovated,
 
       parentSchema: {
-        ...convertNullable(schema.parentSchema?.header, (header) => ({
-          header: { content: header.content },
-        })),
-        ...convertNullable(schema.parentSchema?.body, (body) => ({
-          body: { content: body.content },
-        })),
+        section:
+          schema.parentSchema?.sections?.map((section) => ({
+            content: section.content,
+          })) || [],
       },
 
-      ...convertNullable(schema.header, (header) => ({
-        header: { content: header.content },
-      })),
-      ...convertNullable(schema.body, (body) => ({
-        body: { content: body.content },
+      section: schema.sections.map((section) => ({
+        content: section.content,
       })),
     };
   }

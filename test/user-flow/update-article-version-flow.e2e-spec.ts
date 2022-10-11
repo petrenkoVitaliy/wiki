@@ -27,16 +27,15 @@ describe('Update article version flow', () => {
   };
 
   it('create and update article version', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'article_version_test_article_ua_1',
-      body: 'body_1',
-      header: 'header_1',
+      section: ['section1'],
       categoriesIds: [],
     };
 
     context.createdArticleUA = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.UA,
-      articleDTO,
+      articleDto,
     });
 
     context.articleVersionUA = await articleVersionRequest.getArticleVersion(app, {
@@ -47,7 +46,7 @@ describe('Update article version flow', () => {
     context.articleVersionUA = await articleVersionRequest.patchArticleVersion(app, {
       code: context.createdArticleUA.articleLanguage.version.code,
       languageCode: DefaultLanguages.UA,
-      articleVersionDTO: {
+      articleVersionDto: {
         enabled: false,
       },
     });
@@ -60,16 +59,15 @@ describe('Update article version flow', () => {
   });
 
   it('create and delete article version', async () => {
-    const articleDTO = {
+    const articleDto = {
       name: 'article_version_test_article_ua_2',
-      body: 'body_1',
-      header: 'header_1',
+      section: ['section2'],
       categoriesIds: [],
     };
 
     context.createdArticleUA = await articleRequest.createArticle(app, {
       languageCode: DefaultLanguages.UA,
-      articleDTO,
+      articleDto,
     });
 
     context.articleVersionUA = await articleVersionRequest.getArticleVersion(app, {

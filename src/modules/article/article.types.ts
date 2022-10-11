@@ -3,42 +3,41 @@ import {
   ArticleLanguage,
   ArticleType,
   ArticleVersion,
-  Body,
-  Header,
   Language,
   Schema,
+  Section,
 } from '@prisma/client';
 
 export type ArticleWithVersionsAggregation = Article & {
-  articleLanguage: (ArticleLanguage & {
+  articleLanguages: (ArticleLanguage & {
     language: Language;
-    articleVersion: ArticleVersion[];
+    articleVersions: ArticleVersion[];
   })[];
 };
 
-type SchemaAggregation = Schema & { body: Body | null; header: Header | null };
+type SchemaAggregation = Schema & { sections: Section[] };
 
 export type ArticleLanguageWithDraftsAggregation = ArticleLanguage & {
   article: Article;
-  articleVersion: (ArticleVersion & {
+  articleVersions: (ArticleVersion & {
     schema: SchemaAggregation & {
-      childSchema: SchemaAggregation[];
+      childSchemas: SchemaAggregation[];
     };
   })[];
 };
 
 export type ArticlesAggregation = Article & {
-  articleLanguage: (ArticleLanguage & {
+  articleLanguages: (ArticleLanguage & {
     language: Language;
   })[];
 };
 
 export type ArticleAggregation =
   | Article & {
-      articleLanguage: (ArticleLanguage & {
+      articleLanguages: (ArticleLanguage & {
         language: Language;
-        articleVersion: (ArticleVersion & {
-          schema: Schema & { body: Body | null; header: Header | null };
+        articleVersions: (ArticleVersion & {
+          schema: Schema & { sections: Section[] };
         })[];
       })[];
     };
@@ -49,12 +48,9 @@ export type LanguageAggregation = ArticleLanguage & {
 
 export type MappedSchema = {
   code: string;
-  body?: {
+  section: {
     content: string;
-  };
-  header?: {
-    content: string;
-  };
+  }[];
 };
 
 export type ArticleResponse = {

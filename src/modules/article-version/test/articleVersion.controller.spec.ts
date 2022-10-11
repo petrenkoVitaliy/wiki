@@ -63,12 +63,7 @@ describe('ArticleVersionController', () => {
         version: articleVersion.version,
         schema: {
           code: schema.code,
-          body: {
-            content: schema.body?.content,
-          },
-          header: {
-            content: schema.header?.content,
-          },
+          sections: schema.sections,
         },
       });
     });
@@ -113,12 +108,7 @@ describe('ArticleVersionController', () => {
         version: articleVersion.version,
         schema: {
           code: schema.code,
-          body: {
-            content: schema.body?.content,
-          },
-          header: {
-            content: schema.header?.content,
-          },
+          sections: schema.sections,
         },
       });
     });

@@ -16,7 +16,7 @@ export class CategoryRepository {
         articleCategories: {
           where: {
             article: {
-              articleLanguage: {
+              articleLanguages: {
                 some: {
                   language: {
                     code: options.language,
@@ -28,7 +28,7 @@ export class CategoryRepository {
           include: {
             article: {
               include: {
-                articleLanguage: {
+                articleLanguages: {
                   where: {
                     language: {
                       code: options.language,

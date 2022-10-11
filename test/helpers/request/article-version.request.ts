@@ -23,13 +23,13 @@ const patchArticleVersion = async (
   options: {
     code: string;
     languageCode: string;
-    articleVersionDTO: PatchArticleVersionDto;
+    articleVersionDto: PatchArticleVersionDto;
     responseStatus?: HttpStatus;
   },
 ) => {
   const response = await request(app.getHttpServer())
     .patch(`/${options.languageCode}/article-version/${options.code}`)
-    .send({ ...options.articleVersionDTO })
+    .send({ ...options.articleVersionDto })
     .expect(options.responseStatus || HttpStatus.OK);
 
   return response.body;

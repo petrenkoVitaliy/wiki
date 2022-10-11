@@ -59,11 +59,11 @@ describe('ArticleController', () => {
     it('return articles', async () => {
       const articleLanguage = entityFactory.articleLanguage.extended({
         language: languages.UA,
-        articleVersion: [],
+        articleVersions: [],
       });
 
       const article = entityFactory.article.extended({
-        articleLanguage: [articleLanguage],
+        articleLanguages: [articleLanguage],
       }) as ArticlesAggregation;
 
       PrismaMock.article.findMany.mockResolvedValue([article]);
@@ -75,7 +75,7 @@ describe('ArticleController', () => {
         code: article.code,
         type: article.type,
         articleLanguage: {
-          name: article.articleLanguage[0].name,
+          name: article.articleLanguages[0].name,
         },
       });
     });
@@ -90,7 +90,7 @@ describe('ArticleController', () => {
 
     it('handle error', async () => {
       const article = entityFactory.article.extended({
-        articleLanguage: [],
+        articleLanguages: [],
       }) as ArticlesAggregation;
 
       PrismaMock.article.findMany.mockResolvedValue([article]);
@@ -133,8 +133,7 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              body: { content: articleVersion?.schema?.body?.content },
-              header: { content: articleVersion?.schema?.header?.content },
+              section: articleVersion?.schema?.sections,
             },
           },
         },
@@ -154,7 +153,7 @@ describe('ArticleController', () => {
 
     it('handle invalid ArticleLanguage error', async () => {
       const article = entityFactory.article.extended({
-        articleLanguage: [],
+        articleLanguages: [],
       }) as ArticleAggregation;
 
       PrismaMock.article.findFirstOrThrow.mockResolvedValue(article);
@@ -167,11 +166,11 @@ describe('ArticleController', () => {
     it('handle invalid ArticleVersion error', async () => {
       const articleLanguage = entityFactory.articleLanguage.extended({
         language: languages.UA,
-        articleVersion: [],
+        articleVersions: [],
       }) as LanguageAggregation;
 
       const article = entityFactory.article.extended({
-        articleLanguage: [articleLanguage],
+        articleLanguages: [articleLanguage],
       }) as ArticleAggregation;
 
       PrismaMock.article.findFirstOrThrow.mockResolvedValue(article);
@@ -245,31 +244,16 @@ describe('ArticleController', () => {
         code: articleVersion1.code,
         schema: {
           code: articleVersion1?.schema?.code,
-          body: {
-            content: articleVersion1?.schema?.body?.content,
-          },
-          header: {
-            content: articleVersion1?.schema?.header?.content,
-          },
+          section: articleVersion1?.schema?.sections,
         },
         drafts: [
           {
             code: schema1.code,
-            body: {
-              content: schema1.body?.content,
-            },
-            header: {
-              content: schema1.header?.content,
-            },
+            section: articleVersion1?.schema?.sections,
           },
           {
             code: schema2.code,
-            body: {
-              content: schema2.body?.content,
-            },
-            header: {
-              content: schema2.header?.content,
-            },
+            section: articleVersion1?.schema?.sections,
           },
         ],
       });
@@ -299,7 +283,7 @@ describe('ArticleController', () => {
 
       const articleResponse = await module.articleController.createArticle(
         languages.UA.code,
-        Mock.articleDTOMocks.validArticleMock,
+        Mock.articleDtoMocks.validArticleMock,
       );
 
       expect(articleResponse).toEqual({
@@ -314,8 +298,7 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              body: { content: articleVersion?.schema?.body?.content },
-              header: { content: articleVersion?.schema?.header?.content },
+              section: articleVersion?.schema?.sections,
             },
           },
         },
@@ -333,7 +316,7 @@ describe('ArticleController', () => {
       PrismaMock.article.create.mockResolvedValue(article);
 
       expect(
-        module.articleController.createArticle(article.code, Mock.articleDTOMocks.validArticleMock),
+        module.articleController.createArticle(article.code, Mock.articleDtoMocks.validArticleMock),
       ).rejects.toThrow(expectedError.message);
     });
   });
@@ -360,7 +343,7 @@ describe('ArticleController', () => {
       const articleResponse = await module.articleController.addArticleLanguage(
         languages.EN.code,
         article.code,
-        Mock.articleDTOMocks.validArticleMock,
+        Mock.articleDtoMocks.validArticleMock,
       );
 
       expect(articleResponse).toEqual({
@@ -375,8 +358,7 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              body: { content: articleVersion?.schema?.body?.content },
-              header: { content: articleVersion?.schema?.header?.content },
+              section: articleVersion?.schema?.sections,
             },
           },
         },
@@ -397,7 +379,7 @@ describe('ArticleController', () => {
         module.articleController.addArticleLanguage(
           languages.UA.code,
           article.code,
-          Mock.articleDTOMocks.validArticleMock,
+          Mock.articleDtoMocks.validArticleMock,
         ),
       ).rejects.toThrow(ErrorGenerator.duplicateEntity({ entityName: 'ArticleLanguage' }));
     });
@@ -425,7 +407,7 @@ describe('ArticleController', () => {
         module.articleController.addArticleLanguage(
           languages.EN.code,
           article.code,
-          Mock.articleDTOMocks.validArticleMock,
+          Mock.articleDtoMocks.validArticleMock,
         ),
       ).rejects.toThrow(ErrorGenerator.invalidEntity({ entityName: 'ArticleLanguage' }));
     });
@@ -477,8 +459,7 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              body: { content: articleVersion?.schema?.body?.content },
-              header: { content: articleVersion?.schema?.header?.content },
+              section: articleVersion?.schema?.sections,
             },
           },
         },

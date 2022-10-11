@@ -20,7 +20,7 @@ import {
   EntityFactoryModule,
 } from '../../../test-helpers/entity-factory/entityFactory';
 import { DefaultLanguages } from '../../../constants/constants';
-import { schemaDTOMocks } from './mock/schema.mock';
+import { schemaDtoMocks } from './mock/schema.mock';
 import { ErrorGenerator } from '../../../utils/error.generator';
 
 describe('SchemaController', () => {
@@ -113,7 +113,7 @@ describe('SchemaController', () => {
       const schemaAggregation = await module.schemaController.createDraftSchema(
         articleVersion.code,
         languages.UA.code,
-        schemaDTOMocks.validSchemaMock,
+        schemaDtoMocks.validSchemaMock,
       );
 
       expect(schemaAggregation).toEqual({
@@ -136,7 +136,7 @@ describe('SchemaController', () => {
       const schemaAggregation = await module.schemaController.createDraftSchema(
         articleVersion.code,
         languages.UA.code,
-        schemaDTOMocks.validSchemaMock,
+        schemaDtoMocks.validSchemaMock,
       );
 
       expect(schemaAggregation).toEqual({
@@ -155,6 +155,8 @@ describe('SchemaController', () => {
       const { schema } = getSchemaAggregation(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
+      // TODO add sections
+      PrismaMock.schema.findFirstOrThrow.mockResolvedValue(schema);
       PrismaMock.schema.update.mockResolvedValue(schema);
       PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
@@ -162,7 +164,7 @@ describe('SchemaController', () => {
         schema.code,
         languages.UA.code,
         articleVersion.code,
-        schemaDTOMocks.validSchemaMock,
+        schemaDtoMocks.validSchemaMock,
       );
 
       expect(schemaAggregation).toEqual({
@@ -177,6 +179,8 @@ describe('SchemaController', () => {
       const { schema } = getSchemaAggregationWithoutVersion(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
+      // TODO add section
+      PrismaMock.schema.findFirstOrThrow.mockResolvedValue(schema);
       PrismaMock.schema.update.mockResolvedValue(schema);
       PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
 
@@ -184,7 +188,7 @@ describe('SchemaController', () => {
         schema.code,
         languages.UA.code,
         articleVersion.code,
-        schemaDTOMocks.validSchemaMock,
+        schemaDtoMocks.validSchemaMock,
       );
 
       expect(schemaAggregation).toEqual({
@@ -212,7 +216,7 @@ describe('SchemaController', () => {
           schema.code,
           languages.UA.code,
           articleVersion.code,
-          schemaDTOMocks.validSchemaMock,
+          schemaDtoMocks.validSchemaMock,
         ),
       ).rejects.toThrow(ErrorGenerator.alreadyActualSchema());
     });
@@ -229,7 +233,7 @@ describe('SchemaController', () => {
         schema.code,
         languages.UA.code,
         articleVersion.code,
-        schemaDTOMocks.validSchemaMock,
+        schemaDtoMocks.validSchemaMock,
       );
 
       expect(schemaAggregation).toEqual({
@@ -313,12 +317,7 @@ describe('SchemaController', () => {
         version: 1,
         schema: {
           code: articleVersion2.schema?.code,
-          header: {
-            content: articleVersion2.schema?.header?.content,
-          },
-          body: {
-            content: articleVersion2.schema?.body?.content,
-          },
+          section: articleVersion2?.schema?.sections,
         },
       });
     });

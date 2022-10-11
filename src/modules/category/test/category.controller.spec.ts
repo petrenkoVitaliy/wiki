@@ -43,11 +43,11 @@ describe('CategoryController', () => {
     it('return categories map', async () => {
       const articleLanguage = entityFactory.articleLanguage.extended({
         language: languages.UA,
-        articleVersion: [],
+        articleVersions: [],
       });
 
       const article = entityFactory.article.extended({
-        articleLanguage: [articleLanguage],
+        articleLanguages: [articleLanguage],
       });
 
       const category1 = entityFactory.category.extended({
