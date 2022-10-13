@@ -2,9 +2,9 @@
   "name": "wk",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "petrenkoVitaliy",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
