@@ -6,15 +6,23 @@ import { ArticleVersionResponse } from '../../src/modules/article-version/articl
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { closeConnection, initTestModule } from '../helpers/hook';
 
-import { articleRequest } from '../helpers/request/article.request';
-import { articleVersionRequest } from '../helpers/request/article-version.request';
+import { ArticleRequest } from '../helpers/request/article/article.request';
+import { ArticleVersionRequest } from '../helpers/request/article-version/article-version.request';
 
 describe('Update article version flow', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
+  const Request = {} as {
+    article: ArticleRequest;
+    articleVersion: ArticleVersionRequest;
+  };
+
   beforeAll(async () => {
     ({ app, prismaService } = await initTestModule());
+
+    Request.article = new ArticleRequest(app);
+    Request.articleVersion = new ArticleVersionRequest(app);
   });
 
   afterAll(async () => {
@@ -38,17 +46,17 @@ describe('Update article version flow', () => {
       categoriesIds: [],
     };
 
-    context.createdArticleUA = await articleRequest.createArticle(app, {
+    context.createdArticleUA = await Request.article.createArticle({
       languageCode: DefaultLanguages.UA,
       articleDto,
     });
 
-    context.articleVersionUA = await articleVersionRequest.getArticleVersion(app, {
+    context.articleVersionUA = await Request.articleVersion.getArticleVersion({
       code: context.createdArticleUA.articleLanguage.version.code,
       languageCode: DefaultLanguages.UA,
     });
 
-    context.articleVersionUA = await articleVersionRequest.patchArticleVersion(app, {
+    context.articleVersionUA = await Request.articleVersion.patchArticleVersion({
       code: context.createdArticleUA.articleLanguage.version.code,
       languageCode: DefaultLanguages.UA,
       articleVersionDto: {
@@ -56,7 +64,7 @@ describe('Update article version flow', () => {
       },
     });
 
-    context.articleVersionUA = await articleVersionRequest.getArticleVersion(app, {
+    context.articleVersionUA = await Request.articleVersion.getArticleVersion({
       code: context.createdArticleUA.articleLanguage.version.code,
       languageCode: DefaultLanguages.UA,
       responseStatus: HttpStatus.NOT_FOUND,
@@ -75,22 +83,22 @@ describe('Update article version flow', () => {
       categoriesIds: [],
     };
 
-    context.createdArticleUA = await articleRequest.createArticle(app, {
+    context.createdArticleUA = await Request.article.createArticle({
       languageCode: DefaultLanguages.UA,
       articleDto,
     });
 
-    context.articleVersionUA = await articleVersionRequest.getArticleVersion(app, {
+    context.articleVersionUA = await Request.articleVersion.getArticleVersion({
       code: context.createdArticleUA.articleLanguage.version.code,
       languageCode: DefaultLanguages.UA,
     });
 
-    context.articleVersionUA = await articleVersionRequest.deleteArticleVersion(app, {
+    context.articleVersionUA = await Request.articleVersion.deleteArticleVersion({
       code: context.createdArticleUA.articleLanguage.version.code,
       languageCode: DefaultLanguages.UA,
     });
 
-    context.articleVersionUA = await articleVersionRequest.getArticleVersion(app, {
+    context.articleVersionUA = await Request.articleVersion.getArticleVersion({
       code: context.createdArticleUA.articleLanguage.version.code,
       languageCode: DefaultLanguages.UA,
       responseStatus: HttpStatus.NOT_FOUND,

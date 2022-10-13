@@ -5,9 +5,9 @@ const prisma = new PrismaClient();
 
 const creators = new Creators(prisma);
 
-async function main() {
+const main = async () => {
   await creators.createLanguages([{ code: 'EN' }, { code: 'UA' }]);
-}
+};
 
 main()
   .catch(async (e) => {

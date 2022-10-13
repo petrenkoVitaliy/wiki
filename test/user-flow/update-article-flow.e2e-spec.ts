@@ -5,15 +5,20 @@ import { ArticleResponse } from '../../src/modules/article/article.types';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { ErrorGenerator } from '../../src/utils/error.generator';
 import { closeConnection, initTestModule } from '../helpers/hook';
-
-import { articleRequest } from '../helpers/request/article.request';
+import { ArticleRequest } from '../helpers/request/article/article.request';
 
 describe('Update article flow', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
+  const Request = {} as {
+    article: ArticleRequest;
+  };
+
   beforeAll(async () => {
     ({ app, prismaService } = await initTestModule());
+
+    Request.article = new ArticleRequest(app);
   });
 
   afterAll(async () => {
@@ -37,13 +42,12 @@ describe('Update article flow', () => {
       categoriesIds: [],
     };
 
-    context.createdArticleUA = await articleRequest.createArticle(app, {
+    context.createdArticleUA = await Request.article.createArticle({
       languageCode: DefaultLanguages.UA,
       articleDto,
     });
 
-    context.createdArticleUA = await articleRequest.patchArticle(
-      app,
+    context.createdArticleUA = await Request.article.patchArticle(
       {
         code: context.createdArticleUA.code,
         languageCode: DefaultLanguages.UA,
@@ -59,7 +63,7 @@ describe('Update article flow', () => {
   });
 
   it('fail to get inactive article', async () => {
-    await articleRequest.patchArticle(app, {
+    await Request.article.patchArticle({
       code: 'incorrect code',
       languageCode: DefaultLanguages.UA,
       articleDto: {
@@ -70,7 +74,7 @@ describe('Update article flow', () => {
 
     const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
 
-    const errorResponse = await articleRequest.getArticle(app, {
+    const errorResponse = await Request.article.getArticle({
       code: context.createdArticleUA.code,
       languageCode: DefaultLanguages.UA,
       responseStatus: expectedError.getStatus(),
@@ -94,24 +98,24 @@ describe('Update article flow', () => {
       categoriesIds: [],
     };
 
-    context.createdArticleEN = await articleRequest.createArticle(app, {
+    context.createdArticleEN = await Request.article.createArticle({
       languageCode: DefaultLanguages.EN,
       articleDto,
     });
 
-    await articleRequest.getArticle(app, {
+    await Request.article.getArticle({
       code: context.createdArticleEN.code,
       languageCode: DefaultLanguages.EN,
     });
 
-    await articleRequest.deleteArticle(app, {
+    await Request.article.deleteArticle({
       code: context.createdArticleEN.code,
       languageCode: DefaultLanguages.EN,
     });
 
     const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
 
-    const errorResponse = await articleRequest.getArticle(app, {
+    const errorResponse = await Request.article.getArticle({
       code: context.createdArticleEN.code,
       languageCode: DefaultLanguages.EN,
       responseStatus: expectedError.getStatus(),
@@ -126,7 +130,7 @@ describe('Update article flow', () => {
   it('fail to delete not existing article', async () => {
     const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
 
-    const errorResponse = await articleRequest.deleteArticle(app, {
+    const errorResponse = await Request.article.deleteArticle({
       code: 'incorrect code',
       languageCode: DefaultLanguages.EN,
       responseStatus: expectedError.getStatus(),

@@ -8,14 +8,14 @@ import { PrismaService } from './prisma/prisma.service';
 const logger = new Logger();
 const PORT = 3000;
 
-function createSwaggerDocument(app: INestApplication) {
+const createSwaggerDocument = (app: INestApplication) => {
   const config = new DocumentBuilder().setTitle('WK').setVersion('1.0').build();
   const document = SwaggerModule.createDocument(app, config);
 
   SwaggerModule.setup('api', app, document);
-}
+};
 
-(async function bootstrap() {
+(async () => {
   const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(new ValidationPipe());

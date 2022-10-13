@@ -7,15 +7,23 @@ import { closeConnection, initTestModule } from '../helpers/hook';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { ErrorGenerator } from '../../src/utils/error.generator';
 
-import { articleRequest } from '../helpers/request/article.request';
-import { schemaRequest } from '../helpers/request/schema.request';
+import { ArticleRequest } from '../helpers/request/article/article.request';
+import { SchemaRequest } from '../helpers/request/schema/schema.request';
 
 describe('Article creation flow', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
+  const Request = {} as {
+    article: ArticleRequest;
+    schema: SchemaRequest;
+  };
+
   beforeAll(async () => {
     ({ app, prismaService } = await initTestModule());
+
+    Request.article = new ArticleRequest(app);
+    Request.schema = new SchemaRequest(app);
   });
 
   afterAll(async () => {
@@ -42,7 +50,7 @@ describe('Article creation flow', () => {
       categoriesIds: [],
     };
 
-    context.createdArticleEN = await articleRequest.createArticle(app, {
+    context.createdArticleEN = await Request.article.createArticle({
       languageCode: DefaultLanguages.EN,
       articleDto,
     });
@@ -62,7 +70,7 @@ describe('Article creation flow', () => {
 
     const expectedError = ErrorGenerator.notUniqueProperty({ propertyName: 'Article name' });
 
-    const errorResponse = await articleRequest.createArticle(app, {
+    const errorResponse = await Request.article.createArticle({
       languageCode: DefaultLanguages.EN,
       articleDto,
       responseStatus: expectedError.getStatus(),
@@ -86,14 +94,13 @@ describe('Article creation flow', () => {
       categoriesIds: [],
     };
 
-    context.createdArticleUA = await articleRequest.addArticleLanguage(
-      app,
+    context.createdArticleUA = await Request.article.addArticleLanguage(
       {
         languageCode: DefaultLanguages.UA,
         articleDto,
         articleCode: context.createdArticleEN.code,
       },
-      { createdLanguages: [DefaultLanguages.EN] },
+      { createdLanguages: [DefaultLanguages.EN], articleDto },
     );
   });
 
@@ -111,14 +118,13 @@ describe('Article creation flow', () => {
 
     const articleVersionCode = context.createdArticleUA.articleLanguage.version.code;
 
-    context.createdDraft1 = await schemaRequest.createDraft(
-      app,
+    context.createdDraft1 = await Request.schema.createDraft(
       {
         languageCode: DefaultLanguages.UA,
         articleVersionCode,
         schemaDto,
       },
-      { basicSchema },
+      { basicSchema, schemaDto },
     );
   });
 
@@ -135,20 +141,18 @@ describe('Article creation flow', () => {
     const basicSchema = context.createdArticleUA.articleLanguage.version.schema;
     const articleVersionCode = context.createdArticleUA.articleLanguage.version.code;
 
-    context.createdDraft2 = await schemaRequest.createDraft(
-      app,
+    context.createdDraft2 = await Request.schema.createDraft(
       {
         languageCode: DefaultLanguages.UA,
         articleVersionCode,
         schemaDto,
       },
-      { basicSchema },
+      { basicSchema, schemaDto },
     );
   });
 
   it('get article drafts', async () => {
-    context.articleDrafts1 = await articleRequest.getArticleDrafts(
-      app,
+    context.articleDrafts1 = await Request.article.getArticleDrafts(
       {
         languageCode: DefaultLanguages.UA,
         articleCode: context.createdArticleUA.code,
@@ -169,13 +173,13 @@ describe('Article creation flow', () => {
   });
 
   it('get article', async () => {
-    await articleRequest.getArticle(
-      app,
+    await Request.article.getArticle(
       {
         languageCode: DefaultLanguages.UA,
         code: context.createdArticleUA.code,
       },
       {
+        code: context.createdArticleUA.code,
         articleResponse: context.createdArticleUA,
         createdLanguages: [DefaultLanguages.EN],
       },

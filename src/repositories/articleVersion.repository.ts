@@ -144,8 +144,8 @@ export class ArticleVersionRepository {
 
   private updateExtended<
     T extends boolean,
-    P extends Pick<Argument<typeof this.UpdateMethodType>, 'data' | 'where'>,
-    R extends Argument<typeof this.UpdateMethodType>['include'],
+    P extends Pick<Argument<typeof this.UpdateMethodType, 0>, 'data' | 'where'>,
+    R extends Argument<typeof this.UpdateMethodType, 0>['include'],
   >(options: { updateOptions: P; isExtended?: T; include: R }) {
     const { updateOptions, include } = options;
 

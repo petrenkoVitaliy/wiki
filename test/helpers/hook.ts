@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../src/modules/app/app.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
 
-export async function initTestModule() {
+export const initTestModule = async () => {
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
   }).compile();
@@ -18,9 +18,9 @@ export async function initTestModule() {
     app,
     prismaService,
   };
-}
+};
 
-export async function closeConnection(app: INestApplication, prismaService: PrismaService) {
+export const closeConnection = async (app: INestApplication, prismaService: PrismaService) => {
   await prismaService.$disconnect();
   await app.close();
-}
+};

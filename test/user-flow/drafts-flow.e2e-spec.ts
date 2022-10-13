@@ -7,15 +7,22 @@ import { closeConnection, initTestModule } from '../helpers/hook';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import { ErrorGenerator } from '../../src/utils/error.generator';
 
-import { articleRequest } from '../helpers/request/article.request';
-import { schemaRequest } from '../helpers/request/schema.request';
+import { SchemaRequest } from '../helpers/request/schema/schema.request';
+import { ArticleRequest } from '../helpers/request/article/article.request';
 
 describe('Draft creation flow', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
+  const Request = {} as {
+    article: ArticleRequest;
+    schema: SchemaRequest;
+  };
 
   beforeAll(async () => {
     ({ app, prismaService } = await initTestModule());
+
+    Request.article = new ArticleRequest(app);
+    Request.schema = new SchemaRequest(app);
   });
 
   afterAll(async () => {
@@ -41,7 +48,7 @@ describe('Draft creation flow', () => {
       categoriesIds: [],
     };
 
-    context.initialArticle = await articleRequest.createArticle(app, {
+    context.initialArticle = await Request.article.createArticle({
       languageCode: DefaultLanguages.UA,
       articleDto,
     });
@@ -50,7 +57,7 @@ describe('Draft creation flow', () => {
 
     const articleVersionCode = context.createdArticle.articleLanguage.version.code;
 
-    context.createdDraft1 = await schemaRequest.createDraft(app, {
+    context.createdDraft1 = await Request.schema.createDraft({
       languageCode: DefaultLanguages.UA,
       articleVersionCode,
       schemaDto: {
@@ -63,7 +70,7 @@ describe('Draft creation flow', () => {
       },
     });
 
-    context.createdDraft2 = await schemaRequest.createDraft(app, {
+    context.createdDraft2 = await Request.schema.createDraft({
       languageCode: DefaultLanguages.UA,
       articleVersionCode,
       schemaDto: {
@@ -81,22 +88,24 @@ describe('Draft creation flow', () => {
     const articleVersionCode = context.createdArticle.articleLanguage.version.code;
     const parentSchema = context.createdArticle.articleLanguage.version.schema;
 
-    context.createdDraft1 = await schemaRequest.updateDraft(
-      app,
+    const schemaDto = {
+      sections: [
+        {
+          content: 'section5',
+          name: 'name',
+        },
+      ],
+    };
+
+    context.createdDraft1 = await Request.schema.updateDraft(
       {
         code: context.createdDraft1.code,
         languageCode: DefaultLanguages.UA,
         articleVersionCode,
-        schemaDto: {
-          sections: [
-            {
-              content: 'section5',
-              name: 'name',
-            },
-          ],
-        },
+        schemaDto,
       },
       {
+        schemaDto,
         shouldBeRenovated: false,
         parentSchema: {
           sections: parentSchema.sections,
@@ -124,7 +133,7 @@ describe('Draft creation flow', () => {
 
     const expectedError = ErrorGenerator.alreadyActualSchema();
 
-    const errorResponse = await schemaRequest.renovateDraftSchema(app, {
+    const errorResponse = await Request.schema.renovateDraftSchema({
       code: context.createdDraft2.code,
       languageCode: DefaultLanguages.UA,
       articleVersionCode: articleVersion.code,
@@ -143,8 +152,7 @@ describe('Draft creation flow', () => {
     const articleVersion = article.articleLanguage.version;
     const articleSchema = articleVersion.schema;
 
-    await schemaRequest.approveDraft(
-      app,
+    await Request.schema.approveDraft(
       {
         code: context.createdDraft1.code,
         languageCode: DefaultLanguages.UA,
@@ -156,8 +164,7 @@ describe('Draft creation flow', () => {
       },
     );
 
-    const articleDrafts: ArticleDraftsResponse = await articleRequest.getArticleDrafts(
-      app,
+    const articleDrafts: ArticleDraftsResponse = await Request.article.getArticleDrafts(
       {
         languageCode: DefaultLanguages.UA,
         articleCode: article.code,
@@ -183,7 +190,7 @@ describe('Draft creation flow', () => {
       },
     );
 
-    context.createdDraft1 = await schemaRequest.getSchema(app, {
+    context.createdDraft1 = await Request.schema.getSchema({
       code: context.createdDraft1.code,
       languageCode: DefaultLanguages.UA,
       articleVersionCode: articleDrafts.articleVersions[1].code,
@@ -195,8 +202,7 @@ describe('Draft creation flow', () => {
     const articleVersion = article.articleLanguage.version;
     const articleSchema = articleVersion.schema;
 
-    await schemaRequest.getSchema(
-      app,
+    await Request.schema.getSchema(
       {
         code: context.createdDraft2.code,
         languageCode: DefaultLanguages.UA,
@@ -231,8 +237,7 @@ describe('Draft creation flow', () => {
       ],
     };
 
-    context.createdDraft2 = await schemaRequest.renovateDraftSchema(
-      app,
+    context.createdDraft2 = await Request.schema.renovateDraftSchema(
       {
         code: context.createdDraft2.code,
         languageCode: DefaultLanguages.UA,
@@ -240,6 +245,7 @@ describe('Draft creation flow', () => {
         schemaDto,
       },
       {
+        schemaDto,
         shouldBeRenovated: false,
         parentSchema: {
           sections: context.createdDraft1.sections,
@@ -247,7 +253,7 @@ describe('Draft creation flow', () => {
       },
     );
 
-    context.createdArticle = await articleRequest.getArticle(app, {
+    context.createdArticle = await Request.article.getArticle({
       languageCode: DefaultLanguages.UA,
       code: context.createdArticle.code,
     });
@@ -257,8 +263,7 @@ describe('Draft creation flow', () => {
     const article = context.createdArticle;
     const articleVersion = article.articleLanguage.version;
 
-    await schemaRequest.approveDraft(
-      app,
+    await Request.schema.approveDraft(
       {
         code: context.createdDraft2.code,
         languageCode: DefaultLanguages.UA,
@@ -275,8 +280,7 @@ describe('Draft creation flow', () => {
     const article = context.createdArticle;
     const initialArticleSchema = context.initialArticle.articleLanguage.version.schema;
 
-    await articleRequest.getArticleDrafts(
-      app,
+    await Request.article.getArticleDrafts(
       {
         languageCode: DefaultLanguages.UA,
         articleCode: article.code,

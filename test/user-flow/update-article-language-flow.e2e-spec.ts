@@ -6,15 +6,23 @@ import { DefaultLanguages } from '../../src/constants/constants';
 import { ArticleResponse } from '../../src/modules/article/article.types';
 import { ErrorGenerator } from '../../src/utils/error.generator';
 
-import { articleRequest } from '../helpers/request/article.request';
-import { articleLanguageRequest } from '../helpers/request/article-language.request';
+import { ArticleLanguageRequest } from '../helpers/request/article-language/article-language.request';
+import { ArticleRequest } from '../helpers/request/article/article.request';
 
 describe('Update article language flow', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
 
+  const Request = {} as {
+    article: ArticleRequest;
+    articleLanguage: ArticleLanguageRequest;
+  };
+
   beforeAll(async () => {
     ({ app, prismaService } = await initTestModule());
+
+    Request.article = new ArticleRequest(app);
+    Request.articleLanguage = new ArticleLanguageRequest(app);
   });
 
   afterAll(async () => {
@@ -39,12 +47,12 @@ describe('Update article language flow', () => {
       categoriesIds: [],
     };
 
-    context.createdArticleUA1 = await articleRequest.createArticle(app, {
+    context.createdArticleUA1 = await Request.article.createArticle({
       languageCode: DefaultLanguages.UA,
       articleDto,
     });
 
-    await articleLanguageRequest.patchArticleLanguage(app, {
+    await Request.articleLanguage.patchArticleLanguage({
       languageCode: DefaultLanguages.UA,
       code: context.createdArticleUA1.articleLanguage.code,
       articleCode: context.createdArticleUA1.code,
@@ -56,7 +64,7 @@ describe('Update article language flow', () => {
 
     const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
 
-    const errorResponse = await articleRequest.getArticle(app, {
+    const errorResponse = await Request.article.getArticle({
       code: context.createdArticleUA1.code,
       languageCode: DefaultLanguages.UA,
       responseStatus: expectedError.getStatus(),
@@ -67,7 +75,7 @@ describe('Update article language flow', () => {
       statusCode: expectedError.getStatus(),
     });
 
-    await articleLanguageRequest.patchArticleLanguage(app, {
+    await Request.articleLanguage.patchArticleLanguage({
       languageCode: DefaultLanguages.UA,
       code: context.createdArticleUA1.articleLanguage.code,
       articleCode: context.createdArticleUA1.code,
@@ -76,7 +84,7 @@ describe('Update article language flow', () => {
       },
     });
 
-    context.createdArticleUA1 = await articleRequest.getArticle(app, {
+    context.createdArticleUA1 = await Request.article.getArticle({
       code: context.createdArticleUA1.code,
       languageCode: DefaultLanguages.UA,
     });
@@ -94,12 +102,12 @@ describe('Update article language flow', () => {
       categoriesIds: [],
     };
 
-    context.createdArticleUA3 = await articleRequest.createArticle(app, {
+    context.createdArticleUA3 = await Request.article.createArticle({
       languageCode: DefaultLanguages.UA,
       articleDto,
     });
 
-    await articleLanguageRequest.deleteArticleLanguage(app, {
+    await Request.articleLanguage.deleteArticleLanguage({
       languageCode: DefaultLanguages.UA,
       code: context.createdArticleUA3.articleLanguage.code,
       articleCode: context.createdArticleUA3.code,
@@ -107,7 +115,7 @@ describe('Update article language flow', () => {
 
     const expectedError = ErrorGenerator.notFound({ entityName: 'Article' });
 
-    const errorResponse = await articleRequest.getArticle(app, {
+    const errorResponse = await Request.article.getArticle({
       code: context.createdArticleUA3.code,
       languageCode: DefaultLanguages.UA,
       responseStatus: expectedError.getStatus(),
@@ -131,12 +139,12 @@ describe('Update article language flow', () => {
       categoriesIds: [],
     };
 
-    context.createdArticleUA4 = await articleRequest.createArticle(app, {
+    context.createdArticleUA4 = await Request.article.createArticle({
       languageCode: DefaultLanguages.UA,
       articleDto,
     });
 
-    await articleLanguageRequest.deleteArticleLanguage(app, {
+    await Request.articleLanguage.deleteArticleLanguage({
       languageCode: DefaultLanguages.UA,
       code: context.createdArticleUA4.articleLanguage.code,
       articleCode: context.createdArticleUA4.code,
@@ -144,7 +152,7 @@ describe('Update article language flow', () => {
 
     const expectedError = ErrorGenerator.duplicateEntity({ entityName: 'ArticleLanguage' });
 
-    const errorResponse = await articleRequest.addArticleLanguage(app, {
+    const errorResponse = await Request.article.addArticleLanguage({
       languageCode: DefaultLanguages.UA,
       articleCode: context.createdArticleUA4.code,
       articleDto: {
