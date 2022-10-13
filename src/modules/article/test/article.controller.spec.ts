@@ -133,7 +133,7 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              section: articleVersion?.schema?.sections,
+              sections: articleVersion?.schema?.sections,
             },
           },
         },
@@ -244,16 +244,16 @@ describe('ArticleController', () => {
         code: articleVersion1.code,
         schema: {
           code: articleVersion1?.schema?.code,
-          section: articleVersion1?.schema?.sections,
+          sections: articleVersion1?.schema?.sections,
         },
         drafts: [
           {
             code: schema1.code,
-            section: articleVersion1?.schema?.sections,
+            sections: articleVersion1?.schema?.sections,
           },
           {
             code: schema2.code,
-            section: articleVersion1?.schema?.sections,
+            sections: articleVersion1?.schema?.sections,
           },
         ],
       });
@@ -298,7 +298,7 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              section: articleVersion?.schema?.sections,
+              sections: articleVersion?.schema?.sections,
             },
           },
         },
@@ -358,7 +358,7 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              section: articleVersion?.schema?.sections,
+              sections: articleVersion?.schema?.sections,
             },
           },
         },
@@ -459,7 +459,7 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              section: articleVersion?.schema?.sections,
+              sections: articleVersion?.schema?.sections,
             },
           },
         },

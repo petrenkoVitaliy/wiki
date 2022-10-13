@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArticleType } from '@prisma/client';
 import { IsString, IsNotEmpty, IsNumber, IsArray, IsBoolean, IsEnum } from 'class-validator';
+import { SectionDto } from '../schema/schema.dtos';
 
 export class CreateArticleDto {
   @ApiProperty()
@@ -8,11 +9,9 @@ export class CreateArticleDto {
   @IsString()
   name: string;
 
-  @ApiProperty()
   @IsNotEmpty()
   @IsArray()
-  @IsString({ each: true })
-  section: string[];
+  sections: SectionDto[];
 
   @ApiProperty()
   @IsNotEmpty()

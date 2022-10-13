@@ -317,7 +317,7 @@ describe('SchemaController', () => {
         version: 1,
         schema: {
           code: articleVersion2.schema?.code,
-          section: articleVersion2?.schema?.sections,
+          sections: articleVersion2?.schema?.sections,
         },
       });
     });

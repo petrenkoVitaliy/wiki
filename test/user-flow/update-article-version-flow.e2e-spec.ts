@@ -29,7 +29,12 @@ describe('Update article version flow', () => {
   it('create and update article version', async () => {
     const articleDto = {
       name: 'article_version_test_article_ua_1',
-      section: ['section1'],
+      sections: [
+        {
+          content: 'section1',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 
@@ -61,7 +66,12 @@ describe('Update article version flow', () => {
   it('create and delete article version', async () => {
     const articleDto = {
       name: 'article_version_test_article_ua_2',
-      section: ['section2'],
+      sections: [
+        {
+          content: 'section2',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 

@@ -84,7 +84,7 @@ model Schema {
   childSchemas               Schema[]                 @relation("parentSchema")
 
   articleVersion             ArticleVersion?   
-  sections                   Section[]   
+  sections                   SchemasOnSections[]   
 
   updatedAt                  DateTime                 @updatedAt
   createdAt                  DateTime                 @default(now())
@@ -93,12 +93,26 @@ model Schema {
 model Section {
   code                       String                   @default(cuid()) @id
 
+  name                       String
   content                    String                   @db.Text()
 
-  schemas                    Schema[]
+  schemas                    SchemasOnSections[]
   
   updatedAt                  DateTime                 @updatedAt
   createdAt                  DateTime                 @default(now())
+}
+
+model SchemasOnSections {
+  schema                     Schema                   @relation(fields: [schemaCode], references: [code])
+  schemaCode                 String
+
+  section                    Section                  @relation(fields: [sectionCode], references: [code])
+  sectionCode                String
+
+  order                      Int
+
+  @@unique([order, schemaCode])
+  @@id([schemaCode, sectionCode])
 }
 
 model Category {

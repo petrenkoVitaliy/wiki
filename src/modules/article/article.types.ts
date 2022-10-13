@@ -5,6 +5,7 @@ import {
   ArticleVersion,
   Language,
   Schema,
+  SchemasOnSections,
   Section,
 } from '@prisma/client';
 
@@ -15,7 +16,11 @@ export type ArticleWithVersionsAggregation = Article & {
   })[];
 };
 
-type SchemaAggregation = Schema & { sections: Section[] };
+type SchemaAggregation = Schema & {
+  sections: (SchemasOnSections & {
+    section: Section;
+  })[];
+};
 
 export type ArticleLanguageWithDraftsAggregation = ArticleLanguage & {
   article: Article;
@@ -37,7 +42,7 @@ export type ArticleAggregation =
       articleLanguages: (ArticleLanguage & {
         language: Language;
         articleVersions: (ArticleVersion & {
-          schema: Schema & { sections: Section[] };
+          schema: SchemaAggregation;
         })[];
       })[];
     };
@@ -48,7 +53,8 @@ export type LanguageAggregation = ArticleLanguage & {
 
 export type MappedSchema = {
   code: string;
-  section: {
+  sections: {
+    name: string;
     content: string;
   }[];
 };

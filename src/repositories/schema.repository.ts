@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import { CreateSchemaDto } from '../modules/schema/schema.dtos';
 import { ContentUpdateGroups } from '../modules/schema/schema.types';
@@ -35,6 +36,7 @@ export class SchemaRepository {
       const result = await this.prisma.schema.findFirstOrThrow({
         where: {
           code: options.code,
+          // TODO unnecessary
           OR: [
             {
               articleVersion: {
@@ -65,11 +67,25 @@ export class SchemaRepository {
 
         include: {
           articleVersion: true,
-          sections: true,
+          sections: {
+            include: {
+              section: true,
+            },
+            orderBy: {
+              order: Prisma.SortOrder.asc,
+            },
+          },
 
           parentSchema: {
             include: {
-              sections: true,
+              sections: {
+                include: {
+                  section: true,
+                },
+                orderBy: {
+                  order: Prisma.SortOrder.asc,
+                },
+              },
             },
           },
         },
@@ -115,18 +131,55 @@ export class SchemaRepository {
           : null),
 
         sections: {
-          create: updateGroups.toCreate,
-          delete: updateGroups.toDelete,
+          create: updateGroups.toCreate.map(({ content, order, name }) => ({
+            order,
+            section: {
+              create: {
+                content,
+                name,
+              },
+            },
+          })),
+
+          deleteMany: updateGroups.toDelete.map(({ code }) => ({
+            sectionCode: code,
+          })),
+
+          update: updateGroups.toUpdate.map(({ code, order }) => ({
+            where: {
+              schemaCode_sectionCode: {
+                schemaCode: options.code,
+                sectionCode: code,
+              },
+            },
+            data: {
+              order,
+            },
+          })),
         },
       },
 
       include: {
         articleVersion: true,
-        sections: true,
+        sections: {
+          include: {
+            section: true,
+          },
+          orderBy: {
+            order: Prisma.SortOrder.asc,
+          },
+        },
 
         parentSchema: {
           include: {
-            sections: true,
+            sections: {
+              include: {
+                section: true,
+              },
+              orderBy: {
+                order: Prisma.SortOrder.asc,
+              },
+            },
           },
         },
       },
@@ -143,19 +196,39 @@ export class SchemaRepository {
         },
 
         sections: {
-          create: payload.section.map((content) => ({
-            content,
+          create: payload.sections.map(({ content, name }, order) => ({
+            order,
+            section: {
+              create: {
+                content,
+                name,
+              },
+            },
           })),
         },
       },
 
       include: {
         articleVersion: true,
-        sections: true,
+        sections: {
+          include: {
+            section: true,
+          },
+          orderBy: {
+            order: Prisma.SortOrder.asc,
+          },
+        },
 
         parentSchema: {
           include: {
-            sections: true,
+            sections: {
+              include: {
+                section: true,
+              },
+              orderBy: {
+                order: Prisma.SortOrder.asc,
+              },
+            },
           },
         },
       },

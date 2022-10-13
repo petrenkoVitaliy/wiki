@@ -72,7 +72,14 @@ export class ArticleRepository {
                 include: {
                   schema: {
                     include: {
-                      sections: true,
+                      sections: {
+                        include: {
+                          section: true,
+                        },
+                        orderBy: {
+                          order: Prisma.SortOrder.asc,
+                        },
+                      },
                     },
                   },
                 },
@@ -158,8 +165,14 @@ export class ArticleRepository {
                   schema: {
                     create: {
                       sections: {
-                        create: payload.section.map((content) => ({
-                          content,
+                        create: payload.sections.map(({ content, name }, order) => ({
+                          order,
+                          section: {
+                            create: {
+                              content,
+                              name,
+                            },
+                          },
                         })),
                       },
                     },
@@ -180,7 +193,14 @@ export class ArticleRepository {
                 include: {
                   schema: {
                     include: {
-                      sections: true,
+                      sections: {
+                        include: {
+                          section: true,
+                        },
+                        orderBy: {
+                          order: Prisma.SortOrder.asc,
+                        },
+                      },
                     },
                   },
                 },
@@ -236,7 +256,14 @@ export class ArticleRepository {
                 include: {
                   schema: {
                     include: {
-                      sections: true,
+                      sections: {
+                        include: {
+                          section: true,
+                        },
+                        orderBy: {
+                          order: Prisma.SortOrder.asc,
+                        },
+                      },
                     },
                   },
                 },

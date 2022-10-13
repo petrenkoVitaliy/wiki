@@ -28,7 +28,12 @@ describe('Update article flow', () => {
   it('create and update article', async () => {
     const articleDto = {
       name: 'update_article_test_article_ua_1',
-      section: ['section2'],
+      sections: [
+        {
+          content: 'section2',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 
@@ -48,7 +53,7 @@ describe('Update article flow', () => {
       },
       {
         name: articleDto.name,
-        section: articleDto.section,
+        sections: articleDto.sections,
       },
     );
   });
@@ -80,7 +85,12 @@ describe('Update article flow', () => {
   it('create and delete article', async () => {
     const articleDto = {
       name: 'update_article_test_article_en_2',
-      section: ['section4'],
+      sections: [
+        {
+          content: 'section4',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 

@@ -1,5 +1,5 @@
 import { EntityFactoryModule } from '../../../test-helpers/entity-factory/entityFactory';
-import { SchemaAggregation } from '../schema.types';
+import { SchemaWithSectionsAggregation } from '../schema.types';
 
 export const getSchemaAggregation = (entityFactory: EntityFactoryModule) => {
   const parentSchema = entityFactory.schema.extended({});
@@ -8,7 +8,7 @@ export const getSchemaAggregation = (entityFactory: EntityFactoryModule) => {
   const schema = entityFactory.schema.extended({
     parentSchema,
     articleVersion,
-  }) as SchemaAggregation;
+  }) as SchemaWithSectionsAggregation;
 
   return { schema };
 };
@@ -18,7 +18,7 @@ export const getSchemaAggregationWithoutVersion = (entityFactory: EntityFactoryM
 
   const schema = entityFactory.schema.extended({
     parentSchema,
-  }) as SchemaAggregation;
+  }) as SchemaWithSectionsAggregation;
 
   return { schema };
 };
@@ -50,6 +50,6 @@ export const getSingleArticleVersionWithSiblings = (entityFactory: EntityFactory
   return { articleVersion };
 };
 
-export const getSchemaFixture = (schema: Partial<SchemaAggregation> | null) => ({
-  section: schema?.sections || [],
+export const getSchemaFixture = (schema: Partial<SchemaWithSectionsAggregation> | null) => ({
+  sections: schema?.sections || [],
 });

@@ -1,8 +1,10 @@
-import { ArticleVersion, Schema, Section } from '@prisma/client';
+import { ArticleVersion, Schema, SchemasOnSections, Section } from '@prisma/client';
 
 export type ArticleVersionAggregation = ArticleVersion & {
   schema: Schema & {
-    sections: Section[];
+    sections: (SchemasOnSections & {
+      section: Section;
+    })[];
   };
 };
 
@@ -12,6 +14,6 @@ export type ArticleVersionResponse = {
 
   schema: {
     code: string;
-    sections: { content: string }[];
+    sections: { content: string; name: string }[];
   };
 };

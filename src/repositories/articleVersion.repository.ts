@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { Argument, Conditional } from 'src/types/utilityTypes';
 
 import { PrismaService } from '../prisma/prisma.service';
@@ -25,7 +26,14 @@ export class ArticleVersionRepository {
         include: {
           schema: {
             include: {
-              sections: true,
+              sections: {
+                include: {
+                  section: true,
+                },
+                orderBy: {
+                  order: Prisma.SortOrder.asc,
+                },
+              },
             },
           },
         },
@@ -80,7 +88,14 @@ export class ArticleVersionRepository {
       include: {
         schema: {
           include: {
-            sections: true,
+            sections: {
+              include: {
+                section: true,
+              },
+              orderBy: {
+                order: Prisma.SortOrder.asc,
+              },
+            },
           },
         },
       },
@@ -108,7 +123,14 @@ export class ArticleVersionRepository {
     const include = {
       schema: {
         include: {
-          sections: true,
+          sections: {
+            include: {
+              section: true,
+            },
+            orderBy: {
+              order: Prisma.SortOrder.asc,
+            },
+          },
         },
       },
     };

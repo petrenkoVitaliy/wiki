@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Schema, ArticleVersion, Section } from '@prisma/client';
+import { Schema, ArticleVersion } from '@prisma/client';
+import { SchemasOnSectionsNested } from '../../../modules/schema/schema.types';
 
-type SchemaWithContent = Schema & { sections: Section[] };
+type SchemaWithContent = Schema & { sections: SchemasOnSectionsNested[] };
 
 @Injectable()
 export class SchemaFactory {

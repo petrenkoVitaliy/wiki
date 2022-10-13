@@ -37,13 +37,30 @@ export class ArticleLanguageRepository {
             include: {
               schema: {
                 include: {
-                  sections: true,
+                  sections: {
+                    include: {
+                      section: true,
+                    },
+                    orderBy: {
+                      order: Prisma.SortOrder.asc,
+                    },
+                  },
                   childSchemas: {
                     where: {
                       articleVersion: null,
                     },
+                    orderBy: {
+                      createdAt: Prisma.SortOrder.asc,
+                    },
                     include: {
-                      sections: true,
+                      sections: {
+                        include: {
+                          section: true,
+                        },
+                        orderBy: {
+                          order: Prisma.SortOrder.asc,
+                        },
+                      },
                     },
                   },
                 },
@@ -103,8 +120,14 @@ export class ArticleLanguageRepository {
             schema: {
               create: {
                 sections: {
-                  create: payload.section.map((content) => ({
-                    content,
+                  create: payload.sections.map(({ content, name }, order) => ({
+                    order,
+                    section: {
+                      create: {
+                        content,
+                        name,
+                      },
+                    },
                   })),
                 },
               },

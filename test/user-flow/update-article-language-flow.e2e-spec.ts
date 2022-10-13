@@ -30,7 +30,12 @@ describe('Update article language flow', () => {
   it('create and update article language', async () => {
     const articleDto = {
       name: 'article_language_test_article_ua_1',
-      section: ['section1'],
+      sections: [
+        {
+          content: 'section1',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 
@@ -80,7 +85,12 @@ describe('Update article language flow', () => {
   it('create and delete article language', async () => {
     const articleDto = {
       name: 'article_language_test_article_ua_3',
-      section: ['section1'],
+      sections: [
+        {
+          content: 'section1',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 
@@ -112,7 +122,12 @@ describe('Update article language flow', () => {
   it('create, delete and handle recreating error article language', async () => {
     const articleDto = {
       name: 'article_language_test_article_ua_4',
-      section: ['section1'],
+      sections: [
+        {
+          content: 'section1',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 

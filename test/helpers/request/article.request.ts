@@ -30,9 +30,7 @@ const getArticle = async (
             name: testOptions.articleResponse.articleLanguage.name,
             version: {
               schema: {
-                section: testOptions.articleResponse.articleLanguage.version.schema.section.map(
-                  ({ content }) => ({ content }),
-                ),
+                sections: testOptions.articleResponse.articleLanguage.version.schema.sections,
               },
             },
           },
@@ -65,9 +63,7 @@ const createArticle = async (
             version: {
               version: 1,
               schema: {
-                section: options.articleDto.section.map((content) => ({
-                  content,
-                })),
+                sections: options.articleDto.sections,
               },
             },
           },
@@ -88,7 +84,7 @@ const patchArticle = async (
   },
   testOptions?: {
     name: string;
-    section: string[];
+    sections: { name: string; content: string }[];
   },
 ) => {
   const response = await request(app.getHttpServer())
@@ -105,7 +101,7 @@ const patchArticle = async (
             version: {
               version: 1,
               schema: {
-                section: testOptions.section.map((content) => ({ content })),
+                sections: testOptions.sections,
               },
             },
           },
@@ -147,7 +143,7 @@ const getArticleDrafts = async (
     articleVersions: {
       version: number;
       schemaDto: {
-        section: { content: string }[];
+        sections: { content: string; name: string }[];
       };
       drafts: SchemaResponse[];
     }[];
@@ -165,10 +161,10 @@ const getArticleDrafts = async (
           articleVersions: testOptions.articleVersions.map((articleVersion) => ({
             version: articleVersion.version,
             schema: {
-              section: articleVersion.schemaDto.section,
+              sections: articleVersion.schemaDto.sections,
             },
             drafts: articleVersion.drafts.map((draft) => ({
-              section: draft.section,
+              sections: draft.sections,
             })),
           })),
         });
@@ -204,9 +200,7 @@ const addArticleLanguage = async (
             version: {
               version: 1,
               schema: {
-                section: options.articleDto.section.map((content) => ({
-                  content,
-                })),
+                sections: options.articleDto.sections,
               },
             },
           },

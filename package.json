@@ -24,6 +24,7 @@
     "db:reset": "prisma migrate reset",
     "db:reset:test": "dotenv -e .env.test -- prisma migrate reset --force",
     "test:e2e": " npm run db:reset:test && dotenv -e .env.test -- jest --config ./jest-e2e.config.ts",
+    "test:e2e:debug": " npm run db:reset:test && dotenv -e .env.test -- node --inspect-brk node_modules/.bin/jest --runInBand --config ./jest-e2e.config.ts",
     "db:start": "docker run --rm --name docker-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=postgres -p 127.0.0.1:5432:5432 -d postgres"
   },
   "dependencies": {

@@ -33,7 +33,12 @@ describe('Article creation flow', () => {
   it('create new article', async () => {
     const articleDto = {
       name: 'article_test_article_en_1',
-      section: ['section1'],
+      sections: [
+        {
+          content: 'section1',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 
@@ -46,7 +51,12 @@ describe('Article creation flow', () => {
   it('fail to create new article with same name', async () => {
     const articleDto = {
       name: 'article_test_article_en_1',
-      section: ['section1'],
+      sections: [
+        {
+          content: 'section1',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 
@@ -67,7 +77,12 @@ describe('Article creation flow', () => {
   it('add new language to article', async () => {
     const articleDto = {
       name: 'article_test_article_en_3',
-      section: ['section1'],
+      sections: [
+        {
+          content: 'section1',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 
@@ -84,7 +99,12 @@ describe('Article creation flow', () => {
 
   it('create new draft 1', async () => {
     const schemaDto = {
-      section: ['section1'],
+      sections: [
+        {
+          content: 'section1',
+          name: 'name',
+        },
+      ],
     };
 
     const basicSchema = context.createdArticleUA.articleLanguage.version.schema;
@@ -104,7 +124,12 @@ describe('Article creation flow', () => {
 
   it('create new draft 2', async () => {
     const schemaDto = {
-      section: ['section2'],
+      sections: [
+        {
+          content: 'section2',
+          name: 'name',
+        },
+      ],
     };
 
     const basicSchema = context.createdArticleUA.articleLanguage.version.schema;
@@ -134,7 +159,7 @@ describe('Article creation flow', () => {
           {
             version: context.createdArticleUA.articleLanguage.version.version,
             schemaDto: {
-              section: context.createdArticleUA.articleLanguage.version.schema.section,
+              sections: context.createdArticleUA.articleLanguage.version.schema.sections,
             },
             drafts: [context.createdDraft1, context.createdDraft2],
           },

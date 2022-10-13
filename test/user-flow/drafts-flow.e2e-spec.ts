@@ -32,7 +32,12 @@ describe('Draft creation flow', () => {
   it('should create article with drafts', async () => {
     const articleDto = {
       name: 'drafts_test_article_ua_1',
-      section: ['section1'],
+      sections: [
+        {
+          content: 'section1',
+          name: 'name',
+        },
+      ],
       categoriesIds: [],
     };
 
@@ -49,7 +54,12 @@ describe('Draft creation flow', () => {
       languageCode: DefaultLanguages.UA,
       articleVersionCode,
       schemaDto: {
-        section: ['section2'],
+        sections: [
+          {
+            content: 'section2',
+            name: 'name',
+          },
+        ],
       },
     });
 
@@ -57,7 +67,12 @@ describe('Draft creation flow', () => {
       languageCode: DefaultLanguages.UA,
       articleVersionCode,
       schemaDto: {
-        section: ['section3'],
+        sections: [
+          {
+            content: 'section3',
+            name: 'name',
+          },
+        ],
       },
     });
   });
@@ -73,20 +88,36 @@ describe('Draft creation flow', () => {
         languageCode: DefaultLanguages.UA,
         articleVersionCode,
         schemaDto: {
-          section: ['section5'],
+          sections: [
+            {
+              content: 'section5',
+              name: 'name',
+            },
+          ],
         },
       },
       {
         shouldBeRenovated: false,
         parentSchema: {
-          section: parentSchema.section,
+          sections: parentSchema.sections,
         },
       },
     );
   });
 
   it('fail to renovate valid draft schema', async () => {
-    const schemaDto = { section: ['section3', 'section8'] };
+    const schemaDto = {
+      sections: [
+        {
+          content: 'section3',
+          name: 'name',
+        },
+        {
+          content: 'section8',
+          name: 'name',
+        },
+      ],
+    };
 
     const article = context.createdArticle;
     const articleVersion = article.articleLanguage.version;
@@ -121,7 +152,7 @@ describe('Draft creation flow', () => {
       },
       {
         version: articleVersion.version + 1,
-        schemaDto: { section: context.createdDraft1.section.map(({ content }) => content) },
+        schemaDto: { sections: context.createdDraft1.sections },
       },
     );
 
@@ -138,14 +169,14 @@ describe('Draft creation flow', () => {
             version: articleVersion.version,
             drafts: [context.createdDraft2],
             schemaDto: {
-              section: articleSchema.section.map(({ content }) => ({ content })),
+              sections: articleSchema.sections,
             },
           },
           {
             version: articleVersion.version + 1,
             drafts: [],
             schemaDto: {
-              section: context.createdDraft1.section.map(({ content }) => ({ content })),
+              sections: context.createdDraft1.sections,
             },
           },
         ],
@@ -174,10 +205,10 @@ describe('Draft creation flow', () => {
       {
         shouldBeRenovated: true,
         schema: {
-          section: context.createdDraft2.section,
+          sections: context.createdDraft2.sections,
         },
         parentSchema: {
-          section: articleSchema.section,
+          sections: articleSchema.sections,
         },
       },
     );
@@ -187,7 +218,18 @@ describe('Draft creation flow', () => {
     const article = context.createdArticle;
     const articleVersion = article.articleLanguage.version;
 
-    const schemaDto = { section: ['section3', 'section9'] };
+    const schemaDto = {
+      sections: [
+        {
+          content: 'section3',
+          name: 'name',
+        },
+        {
+          content: 'section9',
+          name: 'name',
+        },
+      ],
+    };
 
     context.createdDraft2 = await schemaRequest.renovateDraftSchema(
       app,
@@ -200,7 +242,7 @@ describe('Draft creation flow', () => {
       {
         shouldBeRenovated: false,
         parentSchema: {
-          section: context.createdDraft1.section.map(({ content }) => ({ content })),
+          sections: context.createdDraft1.sections,
         },
       },
     );
@@ -224,7 +266,7 @@ describe('Draft creation flow', () => {
       },
       {
         version: articleVersion.version + 1,
-        schemaDto: { section: context.createdDraft2.section.map(({ content }) => content) },
+        schemaDto: { sections: context.createdDraft2.sections },
       },
     );
   });
@@ -246,21 +288,21 @@ describe('Draft creation flow', () => {
             version: 1,
             drafts: [],
             schemaDto: {
-              section: initialArticleSchema.section.map(({ content }) => ({ content })),
+              sections: initialArticleSchema.sections,
             },
           },
           {
             version: 2,
             drafts: [],
             schemaDto: {
-              section: context.createdDraft1.section.map(({ content }) => ({ content })),
+              sections: context.createdDraft1.sections,
             },
           },
           {
             version: 3,
             drafts: [],
             schemaDto: {
-              section: context.createdDraft2.section.map(({ content }) => ({ content })),
+              sections: context.createdDraft2.sections,
             },
           },
         ],

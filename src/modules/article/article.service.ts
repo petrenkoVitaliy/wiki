@@ -138,15 +138,17 @@ export class ArticleService {
           schema: {
             code: articleVersion.schema.code,
 
-            section: articleVersion.schema.sections.map((section) => ({
-              content: section.content,
+            sections: articleVersion.schema.sections.map((schemaOnSection) => ({
+              ...pick(schemaOnSection.section, ['content', 'name']),
             })),
           },
           drafts: articleVersion.schema.childSchemas.map((childSchema) => {
             return {
               code: childSchema.code,
 
-              section: childSchema.sections.map((section) => ({ content: section.content })),
+              sections: childSchema.sections.map((schemaOnSection) => ({
+                ...pick(schemaOnSection.section, ['content', 'name']),
+              })),
             };
           }),
         };
@@ -229,8 +231,8 @@ export class ArticleService {
           schema: {
             ...pick(articleVersion.schema, ['code']),
 
-            section: articleVersion.schema.sections.map((section) => ({
-              content: section.content,
+            sections: articleVersion.schema.sections.map((schemaOnSection) => ({
+              ...pick(schemaOnSection.section, ['content', 'name']),
             })),
           },
         },

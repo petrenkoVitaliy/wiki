@@ -10,9 +10,11 @@ import { ContentDiffManager } from '../../services/contentDiffManager.service';
 import {
   ArticleVersionShortAggregation,
   ApprovedArticleVersionResponse,
-  SchemaAggregation,
   SchemaResponse,
+  SchemaWithSectionsAggregation,
 } from './schema.types';
+import { ArticleVersion } from '@prisma/client';
+import { pick } from '../../utils/utils';
 
 @Injectable()
 export class SchemaService {
@@ -40,14 +42,14 @@ export class SchemaService {
     payload: CreateSchemaDto,
     options: { code: string; languageCode: string; articleVersionCode: string },
   ) {
-    // TODO optimize
     const schema = await this.schemaRepository.findOneWithParent({
       ...options,
     });
 
     const updateGroups = ContentDiffManager.groupSectionsForUpdate(
+      options.code,
       schema.sections,
-      payload.section,
+      payload.sections,
     );
 
     const updatedSchema = await this.schemaRepository.updateWithRelations(updateGroups, {
@@ -84,8 +86,9 @@ export class SchemaService {
     // TODO is renovation needed?
 
     const updateGroups = ContentDiffManager.groupSectionsForUpdate(
+      options.code,
       schema.sections,
-      payload.section,
+      payload.sections,
     );
 
     const renovatedSchema = await this.schemaRepository.updateWithRelations(updateGroups, {
@@ -173,7 +176,10 @@ export class SchemaService {
   }
 
   private async renovationCheck(
-    schema: SchemaAggregation,
+    schema: {
+      articleVersion: ArticleVersion | null;
+      parentCode: string | null;
+    },
     languageCode: string,
     articleVersionCode: string,
   ): Promise<{
@@ -206,15 +212,15 @@ export class SchemaService {
 
       schema: {
         code: articleVersion.schema.code,
-        section: articleVersion.schema.sections.map((section) => ({
-          content: section.content,
+        sections: articleVersion.schema.sections.map((schemaOnSection) => ({
+          ...pick(schemaOnSection.section, ['content', 'name']),
         })),
       },
     };
   }
 
   private mapToSchemaResponse(
-    schema: SchemaAggregation,
+    schema: SchemaWithSectionsAggregation,
     options: { shouldBeRenovated: boolean },
   ): SchemaResponse {
     return {
@@ -222,14 +228,14 @@ export class SchemaService {
       shouldBeRenovated: options.shouldBeRenovated,
 
       parentSchema: {
-        section:
-          schema.parentSchema?.sections?.map((section) => ({
-            content: section.content,
+        sections:
+          schema.parentSchema?.sections?.map((schemaOnSection) => ({
+            ...pick(schemaOnSection.section, ['content', 'name']),
           })) || [],
       },
 
-      section: schema.sections.map((section) => ({
-        content: section.content,
+      sections: schema.sections.map((schemaOnSection) => ({
+        ...pick(schemaOnSection.section, ['content', 'name']),
       })),
     };
   }

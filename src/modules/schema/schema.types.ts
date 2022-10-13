@@ -1,13 +1,17 @@
-import { Schema, ArticleVersion, Section } from '@prisma/client';
+import { Schema, ArticleVersion, Section, SchemasOnSections } from '@prisma/client';
 
-export type SchemaAggregation = Schema & {
+export type SchemasOnSectionsNested = SchemasOnSections & {
+  section: Section;
+};
+
+export type SchemaWithSectionsAggregation = Schema & {
+  sections: SchemasOnSectionsNested[];
   parentSchema:
     | (Schema & {
-        sections: Section[];
+        sections: SchemasOnSectionsNested[];
       })
     | null;
   articleVersion: ArticleVersion | null;
-  sections: Section[];
 };
 
 export type ArticleVersionShortAggregation = ArticleVersion & {
@@ -20,14 +24,21 @@ export type ContentUpdateGroups = {
   }[];
   toConnect: {
     code: string;
+    order: number;
+  }[];
+  toUpdate: {
+    code: string;
+    order: number;
   }[];
   toCreate: {
     content: string;
+    name: string;
+    order: number;
   }[];
 };
 
 type SchemaContentResponse = {
-  section: { content: string }[];
+  sections: { content: string; name: string }[];
 };
 
 export type SchemaResponse = {
@@ -41,6 +52,6 @@ export type ApprovedArticleVersionResponse = {
   version: number;
   schema: {
     code: string;
-    section: { content: string }[];
+    sections: { content: string; name: string }[];
   };
 };
