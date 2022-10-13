@@ -2,7 +2,7 @@ import { Language } from '@prisma/client';
 
 import { EntityFactoryModule } from '../../../test-helpers/entity-factory/entityFactory';
 import {
-  ArticleAggregation,
+  ArticleWithSchemaAggregation,
   ArticleLanguageWithDraftsAggregation,
   LanguageAggregation,
 } from '../article.types';
@@ -35,7 +35,7 @@ export const getArticleAggregation = (
   const article = entityFactory.article.extended({
     ...options,
     articleLanguages: articleLanguages,
-  }) as ArticleAggregation;
+  }) as ArticleWithSchemaAggregation;
 
   return {
     schema,

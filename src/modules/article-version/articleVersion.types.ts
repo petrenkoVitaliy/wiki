@@ -1,11 +1,8 @@
-import { ArticleVersion, Schema, SchemasOnSections, Section } from '@prisma/client';
+import { ArticleVersion } from '@prisma/client';
+import { SchemaNested } from '../schema/schema.types';
 
 export type ArticleVersionAggregation = ArticleVersion & {
-  schema: Schema & {
-    sections: (SchemasOnSections & {
-      section: Section;
-    })[];
-  };
+  schema: SchemaNested;
 };
 
 export type ArticleVersionResponse = {

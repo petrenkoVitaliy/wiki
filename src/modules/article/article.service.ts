@@ -7,14 +7,14 @@ import { pick } from '../../utils/utils';
 import { LanguageRepository } from '../../repositories/language.repository';
 import { ErrorGenerator } from '../../utils/error.generator';
 import {
-  ArticleAggregation,
+  ArticleWithSchemaAggregation,
   ArticleLanguageWithDraftsAggregation,
-  ArticlesAggregation,
-  ArticleWithVersionsAggregation,
+  ArticleAggregation,
+  ArticleWithVersionAggregation,
   ArticleResponse,
   ArticleDraftsResponse,
   ArticleShortResponse,
-  ArticleVersionShortResponse,
+  ArticleWithVersionResponse,
 } from './article.types';
 
 @Injectable()
@@ -158,8 +158,7 @@ export class ArticleService {
       code: articleLanguageWithDrafts.article.code,
 
       articleLanguage: {
-        name: articleLanguageWithDrafts.name,
-        code: articleLanguageWithDrafts.code,
+        ...pick(articleLanguageWithDrafts, ['name', 'code']),
       },
 
       articleVersions,
@@ -167,9 +166,9 @@ export class ArticleService {
   }
 
   private mapToVersionsResponse(
-    articleWithVersions: ArticleWithVersionsAggregation,
-  ): ArticleVersionShortResponse[] {
-    const versions: ArticleVersionShortResponse[] = [];
+    articleWithVersions: ArticleWithVersionAggregation,
+  ): ArticleWithVersionResponse[] {
+    const versions: ArticleWithVersionResponse[] = [];
 
     articleWithVersions.articleLanguages.forEach((articleLanguage) => {
       articleLanguage.articleVersions.forEach((articleVersion) => {
@@ -184,7 +183,7 @@ export class ArticleService {
   }
 
   private mapToArticleResponse(
-    articleAggregation: ArticleAggregation,
+    articleAggregation: ArticleWithSchemaAggregation,
     options: { languageCode: string },
   ): ArticleResponse {
     const { articleLanguage, additionalLanguages } = articleAggregation.articleLanguages.reduce(
@@ -198,8 +197,8 @@ export class ArticleService {
         return acc;
       },
       { articleLanguage: null, additionalLanguages: [] } as {
-        articleLanguage: ArticleAggregation['articleLanguages'][0] | null;
-        additionalLanguages: ArticleAggregation['articleLanguages'];
+        articleLanguage: ArticleWithSchemaAggregation['articleLanguages'][0] | null;
+        additionalLanguages: ArticleWithSchemaAggregation['articleLanguages'];
       },
     );
 
@@ -229,7 +228,7 @@ export class ArticleService {
           ...pick(articleVersion, ['code', 'version']),
 
           schema: {
-            ...pick(articleVersion.schema, ['code']),
+            code: articleVersion.schema.code,
 
             sections: articleVersion.schema.sections.map((schemaOnSection) => ({
               ...pick(schemaOnSection.section, ['content', 'name']),
@@ -241,7 +240,7 @@ export class ArticleService {
   }
 
   private mapToAllArticlesResponse(
-    articlesAggregations: ArticlesAggregation[],
+    articlesAggregations: ArticleAggregation[],
   ): ArticleShortResponse[] {
     return articlesAggregations.map((articleAggregation) => {
       const articleLanguage = articleAggregation.articleLanguages[0];
@@ -254,7 +253,7 @@ export class ArticleService {
         ...pick(articleAggregation, ['code', 'type']),
 
         articleLanguage: {
-          ...pick(articleLanguage, ['name']),
+          name: articleLanguage.name,
         },
       };
     });

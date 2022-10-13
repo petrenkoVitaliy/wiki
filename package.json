@@ -25,7 +25,8 @@
     "db:reset:test": "dotenv -e .env.test -- prisma migrate reset --force",
     "test:e2e": " npm run db:reset:test && dotenv -e .env.test -- jest --config ./jest-e2e.config.ts",
     "test:e2e:debug": " npm run db:reset:test && dotenv -e .env.test -- node --inspect-brk node_modules/.bin/jest --runInBand --config ./jest-e2e.config.ts",
-    "db:start": "docker run --rm --name docker-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=postgres -p 127.0.0.1:5432:5432 -d postgres"
+    "db:start": "docker run --rm --name docker-postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=postgres -p 127.0.0.1:5432:5432 -d postgres",
+    "unused-check": "./node_modules/.bin/ts-unused-exports ./tsconfig.json"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",
@@ -63,6 +64,7 @@
     "ts-jest": "28.0.8",
     "ts-loader": "^9.2.3",
     "ts-node": "^10.0.0",
+    "ts-unused-exports": "^8.0.0",
     "tsconfig-paths": "4.1.0",
     "typescript": "~4.8.4"
   }

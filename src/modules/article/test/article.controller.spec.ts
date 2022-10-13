@@ -12,7 +12,11 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { PrismaMock } from '../../../prisma/prismaMock.service';
 
 import { DefaultLanguages } from '../../../constants/constants';
-import { ArticleAggregation, ArticlesAggregation, LanguageAggregation } from '../article.types';
+import {
+  ArticleWithSchemaAggregation,
+  ArticleAggregation,
+  LanguageAggregation,
+} from '../article.types';
 import { getArticleAggregation, getArticleLanguageWithDraftsAggregation } from './helpers';
 import { ErrorGenerator } from '../../../utils/error.generator';
 
@@ -64,7 +68,7 @@ describe('ArticleController', () => {
 
       const article = entityFactory.article.extended({
         articleLanguages: [articleLanguage],
-      }) as ArticlesAggregation;
+      }) as ArticleAggregation;
 
       PrismaMock.article.findMany.mockResolvedValue([article]);
 
@@ -91,7 +95,7 @@ describe('ArticleController', () => {
     it('handle error', async () => {
       const article = entityFactory.article.extended({
         articleLanguages: [],
-      }) as ArticlesAggregation;
+      }) as ArticleAggregation;
 
       PrismaMock.article.findMany.mockResolvedValue([article]);
 
@@ -154,7 +158,7 @@ describe('ArticleController', () => {
     it('handle invalid ArticleLanguage error', async () => {
       const article = entityFactory.article.extended({
         articleLanguages: [],
-      }) as ArticleAggregation;
+      }) as ArticleWithSchemaAggregation;
 
       PrismaMock.article.findFirstOrThrow.mockResolvedValue(article);
 
@@ -171,7 +175,7 @@ describe('ArticleController', () => {
 
       const article = entityFactory.article.extended({
         articleLanguages: [articleLanguage],
-      }) as ArticleAggregation;
+      }) as ArticleWithSchemaAggregation;
 
       PrismaMock.article.findFirstOrThrow.mockResolvedValue(article);
 

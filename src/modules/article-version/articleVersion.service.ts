@@ -50,7 +50,7 @@ export class ArticleVersionService {
       ...pick(articleVersion, ['code', 'version']),
 
       schema: {
-        ...pick(articleVersion.schema, ['code']),
+        code: articleVersion.schema.code,
 
         sections: articleVersion.schema.sections.map((schemaOnSection) => ({
           ...pick(schemaOnSection.section, ['content', 'name']),

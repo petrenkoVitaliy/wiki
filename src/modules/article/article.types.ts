@@ -1,51 +1,33 @@
-import {
-  Article,
-  ArticleLanguage,
-  ArticleType,
-  ArticleVersion,
-  Language,
-  Schema,
-  SchemasOnSections,
-  Section,
-} from '@prisma/client';
+import { Article, ArticleLanguage, ArticleType, ArticleVersion, Language } from '@prisma/client';
 
-export type ArticleWithVersionsAggregation = Article & {
+import { SchemaNested } from '../schema/schema.types';
+
+type ArticleLanguagesAggregation<T = unknown> = {
   articleLanguages: (ArticleLanguage & {
     language: Language;
-    articleVersions: ArticleVersion[];
-  })[];
-};
-
-type SchemaAggregation = Schema & {
-  sections: (SchemasOnSections & {
-    section: Section;
-  })[];
+  } & T)[];
 };
 
 export type ArticleLanguageWithDraftsAggregation = ArticleLanguage & {
   article: Article;
   articleVersions: (ArticleVersion & {
-    schema: SchemaAggregation & {
-      childSchemas: SchemaAggregation[];
+    schema: SchemaNested & {
+      childSchemas: SchemaNested[];
     };
   })[];
 };
 
-export type ArticlesAggregation = Article & {
-  articleLanguages: (ArticleLanguage & {
-    language: Language;
-  })[];
-};
+export type ArticleAggregation = Article & ArticleLanguagesAggregation;
 
-export type ArticleAggregation =
-  | Article & {
-      articleLanguages: (ArticleLanguage & {
-        language: Language;
-        articleVersions: (ArticleVersion & {
-          schema: SchemaAggregation;
-        })[];
-      })[];
-    };
+export type ArticleWithVersionAggregation = Article &
+  ArticleLanguagesAggregation<{ articleVersions: ArticleVersion[] }>;
+
+export type ArticleWithSchemaAggregation = Article &
+  ArticleLanguagesAggregation<{
+    articleVersions: (ArticleVersion & {
+      schema: SchemaNested;
+    })[];
+  }>;
 
 export type LanguageAggregation = ArticleLanguage & {
   language: Language;
@@ -60,26 +42,30 @@ export type MappedSchema = {
 };
 
 export type ArticleResponse = {
-  languages: string[] | undefined;
-  articleLanguage: {
-    version: {
-      schema: MappedSchema;
-      code: string;
-      version: number;
-    };
-    code: string;
-    name: string;
-  };
   code: string;
   type: ArticleType;
+  languages?: string[];
+
+  articleLanguage: {
+    code: string;
+    name: string;
+
+    version: {
+      code: string;
+      version: number;
+
+      schema: MappedSchema;
+    };
+  };
 };
 
 export type ArticleShortResponse = {
+  code: string;
+  type: ArticleType;
+
   articleLanguage: {
     name: string;
   };
-  code: string;
-  type: ArticleType;
 };
 
 export type ArticleDraftsResponse = {
@@ -99,7 +85,7 @@ export type ArticleDraftsResponse = {
   }[];
 };
 
-export type ArticleVersionShortResponse = {
+export type ArticleWithVersionResponse = {
   code: string;
   version: number;
 };

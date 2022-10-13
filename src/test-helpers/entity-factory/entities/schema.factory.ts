@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Schema, ArticleVersion } from '@prisma/client';
-import { SchemasOnSectionsNested } from '../../../modules/schema/schema.types';
-
-type SchemaWithContent = Schema & { sections: SchemasOnSectionsNested[] };
+import { SchemaNested } from '../../../modules/schema/schema.types';
 
 @Injectable()
 export class SchemaFactory {
   private entitySeq = 0;
 
-  basic(options: { parentSchema?: SchemaWithContent }) {
+  basic(options: { parentSchema?: SchemaNested }) {
     const code = `schema_code_${++this.entitySeq}`;
 
     return {
@@ -27,11 +25,11 @@ export class SchemaFactory {
 
   extended(options: {
     parentSchema?: Schema;
-    childSchemas?: SchemaWithContent[];
+    childSchemas?: SchemaNested[];
     articleVersion?: ArticleVersion;
-  }): SchemaWithContent & {
-    parentSchema?: SchemaWithContent;
-    childSchemas: SchemaWithContent[];
+  }): SchemaNested & {
+    parentSchema?: SchemaNested;
+    childSchemas: SchemaNested[];
     articleVersion?: ArticleVersion;
   } {
     const basicEntity = this.basic({});

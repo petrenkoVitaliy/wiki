@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ArticleVersion } from '@prisma/client';
 
 import { SchemaRepository } from '../../repositories/schema.repository';
 import { ArticleVersionRepository } from '../../repositories/articleVersion.repository';
@@ -8,12 +9,11 @@ import { CreateSchemaDto } from './schema.dtos';
 import { ArticleVersionAggregation } from '../article-version/articleVersion.types';
 import { ContentDiffManager } from '../../services/contentDiffManager.service';
 import {
-  ArticleVersionShortAggregation,
+  ActualArticleVersionAggregation,
   ApprovedArticleVersionResponse,
   SchemaResponse,
   SchemaWithSectionsAggregation,
 } from './schema.types';
-import { ArticleVersion } from '@prisma/client';
 import { pick } from '../../utils/utils';
 
 @Injectable()
@@ -82,8 +82,6 @@ export class SchemaService {
     if (!renovationCheckResult.isRenovateNeeded) {
       throw ErrorGenerator.alreadyActualSchema();
     }
-
-    // TODO is renovation needed?
 
     const updateGroups = ContentDiffManager.groupSectionsForUpdate(
       options.code,
@@ -184,7 +182,7 @@ export class SchemaService {
     articleVersionCode: string,
   ): Promise<{
     isRenovateNeeded: boolean;
-    actualVersion?: ArticleVersionShortAggregation;
+    actualVersion?: ActualArticleVersionAggregation;
   }> {
     if (schema.articleVersion || !schema.parentCode) {
       return { isRenovateNeeded: false };

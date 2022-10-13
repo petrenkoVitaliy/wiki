@@ -4,17 +4,18 @@ export type SchemasOnSectionsNested = SchemasOnSections & {
   section: Section;
 };
 
-export type SchemaWithSectionsAggregation = Schema & {
+export type SchemaNested = Schema & {
   sections: SchemasOnSectionsNested[];
-  parentSchema:
-    | (Schema & {
-        sections: SchemasOnSectionsNested[];
-      })
-    | null;
-  articleVersion: ArticleVersion | null;
 };
 
-export type ArticleVersionShortAggregation = ArticleVersion & {
+export type SchemaWithSectionsAggregation = Schema & {
+  parentSchema: SchemaNested | null;
+  articleVersion: ArticleVersion | null;
+
+  sections: SchemasOnSectionsNested[];
+};
+
+export type ActualArticleVersionAggregation = ArticleVersion & {
   schema: Schema;
 };
 
