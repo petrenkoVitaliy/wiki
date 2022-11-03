@@ -7,6 +7,7 @@ import { ArticleVersionFactory } from './entities/articleVersion.factory';
 import { CategoryFactory } from './entities/category.factory';
 import { LanguageFactory } from './entities/language.factory';
 import { SchemaFactory } from './entities/schema.factory';
+import { SectionFactory } from './entities/section.factory';
 
 @Module({
   providers: [
@@ -16,6 +17,7 @@ import { SchemaFactory } from './entities/schema.factory';
     ArticleLanguageFactory,
     LanguageFactory,
     CategoryFactory,
+    SectionFactory,
   ],
 })
 class DBFactoryModule {
@@ -26,6 +28,7 @@ class DBFactoryModule {
     public articleLanguage: ArticleLanguageFactory,
     public language: LanguageFactory,
     public category: CategoryFactory,
+    public section: SectionFactory,
   ) {}
 }
 

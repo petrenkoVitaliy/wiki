@@ -155,7 +155,6 @@ describe('SchemaController', () => {
       const { schema } = getSchemaAggregation(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
-      // TODO add sections
       PrismaMock.schema.findFirstOrThrow.mockResolvedValue(schema);
       PrismaMock.schema.update.mockResolvedValue(schema);
       PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
@@ -179,7 +178,6 @@ describe('SchemaController', () => {
       const { schema } = getSchemaAggregationWithoutVersion(entityFactory);
       const { articleVersion } = getArticleVersionWithSiblings(entityFactory);
 
-      // TODO add section
       PrismaMock.schema.findFirstOrThrow.mockResolvedValue(schema);
       PrismaMock.schema.update.mockResolvedValue(schema);
       PrismaMock.articleVersion.findFirstOrThrow.mockResolvedValue(articleVersion);
@@ -249,10 +247,11 @@ describe('SchemaController', () => {
 
   describe('method: approveDraft', () => {
     it('handle already approved schema error [invalid schema]', async () => {
-      const schema1 = entityFactory.schema.extended({});
-      const schema2 = entityFactory.schema.extended({});
+      const schema1 = entityFactory.schema.extended({ sections: [] });
+      const schema2 = entityFactory.schema.extended({ sections: [] });
       const schemaToApprove = entityFactory.schema.extended({
         parentSchema: schema1,
+        sections: [],
       });
       const articleVersion1 = entityFactory.articleVersion.extended({
         schema: schema2,
@@ -271,8 +270,8 @@ describe('SchemaController', () => {
     });
 
     it('handle already approved schema error [primary schema', async () => {
-      const schema1 = entityFactory.schema.extended({});
-      const schemaToApprove = entityFactory.schema.extended({});
+      const schema1 = entityFactory.schema.extended({ sections: [] });
+      const schemaToApprove = entityFactory.schema.extended({ sections: [] });
       const articleVersion1 = entityFactory.articleVersion.extended({
         schema: schema1,
       });
@@ -290,10 +289,14 @@ describe('SchemaController', () => {
     });
 
     it('approve draft schema', async () => {
-      const schema1 = entityFactory.schema.extended({});
+      const sections1 = [1, 2].map((index) => entityFactory.section.extended({ order: index }));
+      const sections2 = [1, 2].map((index) => entityFactory.section.extended({ order: index }));
+      const schema1 = entityFactory.schema.extended({ sections: sections1 });
       const schemaToApprove = entityFactory.schema.extended({
         parentSchema: schema1,
+        sections: sections2,
       });
+
       const articleVersion1 = entityFactory.articleVersion.extended({
         schema: schema1,
       });
@@ -317,7 +320,10 @@ describe('SchemaController', () => {
         version: 1,
         schema: {
           code: articleVersion2.schema?.code,
-          sections: articleVersion2?.schema?.sections,
+          sections: articleVersion2?.schema?.sections?.map(({ section }) => ({
+            name: section.name,
+            content: section.content,
+          })),
         },
       });
     });

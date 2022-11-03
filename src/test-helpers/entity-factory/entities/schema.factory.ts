@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Schema, ArticleVersion } from '@prisma/client';
-import { SchemaNested } from '../../../modules/schema/schema.types';
+import { SchemaNested, SchemasOnSectionsNested } from '../../../modules/schema/schema.types';
 
 @Injectable()
 export class SchemaFactory {
@@ -26,6 +26,7 @@ export class SchemaFactory {
   extended(options: {
     parentSchema?: Schema;
     childSchemas?: SchemaNested[];
+    sections: SchemasOnSectionsNested[];
     articleVersion?: ArticleVersion;
   }): SchemaNested & {
     parentSchema?: SchemaNested;
@@ -39,7 +40,7 @@ export class SchemaFactory {
 
       parentCode: options.parentSchema?.code || null,
       parentSchema: options.parentSchema ? { ...options.parentSchema, sections: [] } : undefined,
-      sections: [],
+      sections: options.sections ? options.sections : [],
       childSchemas: options.childSchemas || [],
       articleVersion: options.articleVersion,
     };

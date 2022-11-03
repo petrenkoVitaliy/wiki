@@ -43,7 +43,8 @@ describe('ArticleVersionController', () => {
 
   describe('method: patchArticleVersion', () => {
     it('patch article version', async () => {
-      const schema = entityFactory.schema.extended({});
+      const sections = [1, 2].map((order) => entityFactory.section.extended({ order }));
+      const schema = entityFactory.schema.extended({ sections });
       const articleVersion = entityFactory.articleVersion.extended({
         schema,
         enabled: false,
@@ -63,7 +64,10 @@ describe('ArticleVersionController', () => {
         version: articleVersion.version,
         schema: {
           code: schema.code,
-          sections: schema.sections,
+          sections: schema?.sections?.map(({ section }) => ({
+            name: section.name,
+            content: section.content,
+          })),
         },
       });
     });
@@ -71,7 +75,8 @@ describe('ArticleVersionController', () => {
 
   describe('method: deleteArticleVersion', () => {
     it('delete article version', async () => {
-      const schema = entityFactory.schema.extended({});
+      const sections = [1, 2].map((order) => entityFactory.section.extended({ order }));
+      const schema = entityFactory.schema.extended({ sections });
       const articleVersion = entityFactory.articleVersion.extended({
         schema,
         enabled: false,
@@ -91,7 +96,8 @@ describe('ArticleVersionController', () => {
 
   describe('method: getArticleVersion', () => {
     it('return article version', async () => {
-      const schema = entityFactory.schema.extended({});
+      const sections = [1, 2].map((order) => entityFactory.section.extended({ order }));
+      const schema = entityFactory.schema.extended({ sections });
       const articleVersion = entityFactory.articleVersion.extended({
         schema,
       }) as ArticleVersionAggregation;
@@ -108,7 +114,10 @@ describe('ArticleVersionController', () => {
         version: articleVersion.version,
         schema: {
           code: schema.code,
-          sections: schema.sections,
+          sections: schema?.sections?.map(({ section }) => ({
+            name: section.name,
+            content: section.content,
+          })),
         },
       });
     });

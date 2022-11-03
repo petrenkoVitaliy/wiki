@@ -137,7 +137,10 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              sections: articleVersion?.schema?.sections,
+              sections: articleVersion?.schema?.sections?.map(({ section }) => ({
+                name: section.name,
+                content: section.content,
+              })),
             },
           },
         },
@@ -248,16 +251,25 @@ describe('ArticleController', () => {
         code: articleVersion1.code,
         schema: {
           code: articleVersion1?.schema?.code,
-          sections: articleVersion1?.schema?.sections,
+          sections: articleVersion1?.schema?.sections?.map(({ section }) => ({
+            name: section.name,
+            content: section.content,
+          })),
         },
         drafts: [
           {
             code: schema1.code,
-            sections: articleVersion1?.schema?.sections,
+            sections: schema1.sections?.map(({ section }) => ({
+              name: section.name,
+              content: section.content,
+            })),
           },
           {
             code: schema2.code,
-            sections: articleVersion1?.schema?.sections,
+            sections: schema2.sections?.map(({ section }) => ({
+              name: section.name,
+              content: section.content,
+            })),
           },
         ],
       });
@@ -302,7 +314,10 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              sections: articleVersion?.schema?.sections,
+              sections: articleVersion?.schema?.sections?.map(({ section }) => ({
+                name: section.name,
+                content: section.content,
+              })),
             },
           },
         },
@@ -362,7 +377,10 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              sections: articleVersion?.schema?.sections,
+              sections: articleVersion?.schema?.sections?.map(({ section }) => ({
+                name: section.name,
+                content: section.content,
+              })),
             },
           },
         },
@@ -463,7 +481,10 @@ describe('ArticleController', () => {
             version: articleVersion.version,
             schema: {
               code: articleVersion?.schema?.code,
-              sections: articleVersion?.schema?.sections,
+              sections: articleVersion?.schema?.sections?.map(({ section }) => ({
+                name: section.name,
+                content: section.content,
+              })),
             },
           },
         },
